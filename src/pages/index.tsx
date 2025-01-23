@@ -1,86 +1,80 @@
-import { useState, useEffect } from 'react';  
-import { Container, Title, TextInput, Select, Text, Alert } from '@mantine/core';  
-import axios from 'axios';  
+import { useState, useEffect } from 'react';
+import { Container, Title, TextInput, Select, Text, Alert } from '@mantine/core';
+import axios from 'axios';
 
-const CurrencyConverter = () => {  
-  const [currencies, setCurrencies] = useState([]);  
-  const [amountFrom, setAmountFrom] = useState(1);
+const CurrencyConverter = () => {
+  const [currencies, setCurrencies] = useState([]); 
+  const [rateConversion, setRateConversion] = useState([]);
+  const [amountFrom, setAmountFrom] = useState(0);
   const [amountTo, setAmountTo] = useState(0); 
-  const [fromCurrency, setFromCurrency] = useState('USD');  
-  const [toCurrency, setToCurrency] = useState('EUR');  
-  const [error, setError] = useState('');  
+  const [fromCurrency, setFromCurrency] = useState('USD');
+  const [toCurrency, setToCurrency] = useState('EUR');
+  const [error, setError] = useState('');
   const [searchValueFrom, setSearchValueFrom] = useState('');
   const [searchValueTo, setSearchValueTo] = useState('');
 
-  const fetchMasterCurrency = async () => {  
-    try {  
-      const response = await axios.get('/api/master_currency');  
-      console.log(response.data);  
-      setCurrencies(response.data);  
-    } catch (err) {  
-      setError('Failed to fetch currency data');  
+  const fetchMasterCurrency = async () => {
+    try {
+      const response = await axios.get('/api/master_currency');
+      console.log(response.data);
+      setCurrencies(response.data);
+    } catch (err) {
+      setError('Failed to fetch currency data');
     }  
-  };  
+  };
 
-  useEffect(() => {  
-    fetchMasterCurrency();  
-  }, []);  
+  const fetchRateConversion = async () => {
+    try {
+      const response = await axios.get(`/api/currency?base_code=${fromCurrency}`);
+      const conversionData = response.data;
+      if (!conversionData || !conversionData.conversion_rates) {
+        const externalResponse = await axios.get(`https://v6.exchangerate-api.com/v6/fe7dfda1cacbc547ab0385d6/latest/${fromCurrency}`);
+        const externalData = externalResponse.data;
 
-  const handleConversion = async () => {  
-    try {  
-      const response = await axios.get(`/api/currency?base_code=${fromCurrency}`);  
-      const conversionData = response.data;  
- 
-      if (!conversionData || !conversionData.conversion_rates) {  
-        const externalResponse = await axios.get(`https://v6.exchangerate-api.com/v6/fe7dfda1cacbc547ab0385d6/latest/${fromCurrency}`);  
-        const externalData = externalResponse.data;  
-
-        await axios.post('/api/currency', {  
+        await axios.post('/api/currency', {
           base_code: externalData.base_code,  
           conversion_rates: JSON.stringify(externalData.conversion_rates),
           update_date: externalData.time_last_update_utc,
-        });  
+        });
 
-        const rate = externalData.conversion_rates[toCurrency];  
+        setRateConversion(externalData.conversion_rates);
+      }
+      else{
+        const rates = JSON.parse(conversionData.conversion_rates);
+        setRateConversion(rates);
+      }
+    } catch (err) {
+      setError('Failed to fetch currency data');
+    }
+  };
 
-        if (rate) {  
-          setAmountTo(amountFrom * rate);
-        } else {  
-          setError('Conversion rate not found');  
-        }  
-      } else {  
-        const rates = JSON.parse(conversionData.conversion_rates);  
-        const rate = rates[toCurrency];  
+  useEffect(() => {
+    fetchMasterCurrency();
+    fetchRateConversion();
+  }, []);
 
-        if (rate) {  
-          setAmountTo(amountFrom * rate);
-        } else {  
-          setError('Conversion rate not found');  
-        }  
-      }  
-    } catch (err) {  
-      setError('Conversion failed');  
-    }  
-  };  
+  const handleFromCurrencyChange = (value: string) => {
+    setFromCurrency(value);
+    fetchRateConversion();
+  };
 
-  const handleAmountFromChange = (value) => {  
-    const numericValue = parseFloat(value);
+  const handleAmountFromChange = (value: string) => {
+    const numericValue = parseFloat(parseFloat(value).toFixed(7));
     setAmountFrom(numericValue || 0);
-    handleConversion();
-  };  
 
-  const handleAmountToChange = (value) => {  
-    const numericValue = parseFloat(value);
+    const rate = rateConversion[toCurrency];
+    const conversion = numericValue * rate;
+    setAmountTo(parseFloat(conversion.toFixed(7)));
+  };
+
+  const handleAmountToChange = (value) => {
+    const numericValue = parseFloat(parseFloat(value).toFixed(7));
     setAmountTo(numericValue || 0);
-    const rate = (amountFrom && amountTo) ? amountTo / amountFrom : 0;
-    setAmountFrom(numericValue / rate);
-  };  
 
-  useEffect(() => {  
-    if (fromCurrency && toCurrency) {  
-      handleConversion();  
-    }  
-  }, [fromCurrency, toCurrency]);
+    const rate = rateConversion[toCurrency];
+    const conversion = numericValue / rate;
+    setAmountFrom(parseFloat(conversion.toFixed(7)));
+  };
 
   return (  
     <Container>  
@@ -93,12 +87,13 @@ const CurrencyConverter = () => {
           onChange={(e) => handleAmountFromChange(e.target.value)}  
           style={{ width: '100px', marginRight: '10px' }}  
           placeholder="Amount From"  
+          onFocus={(e) => e.target.select()}
         />  
         <Select  
           value={fromCurrency}  
           searchValue={searchValueFrom}  
           onSearchChange={setSearchValueFrom}  
-          onChange={setFromCurrency}  
+          onChange={(e) => handleFromCurrencyChange(e.target.value)}  
           onFocus={() => setSearchValueFrom('')}  
           data={currencies.map(currency => ({ value: currency.code, label: `${currency.code} - ${currency.name}` }))}  
           style={{ width: '300px', marginRight: '10px' }}  
@@ -121,13 +116,14 @@ const CurrencyConverter = () => {
           data={currencies.map(currency => ({ value: currency.code, label: `${currency.code} - ${currency.name}` }))}  
           style={{ width: '300px', marginLeft: '10px' }}  
           searchable  
+          onFocus={(e) => e.target.select()}
         />  
       </div>  
       <Text align="center" size="lg" mt="md">  
         {amountFrom.toFixed(2)} {fromCurrency} = {amountTo.toFixed(2)} {toCurrency}  
       </Text>  
     </Container>  
-  );  
-};  
+  );
+};
 
 export default CurrencyConverter;
