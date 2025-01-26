@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 interface Currency {
   base_code: string;
-  conversion_rates: Record<string, number>;
+  conversion_rates: string;
   update_date: string;
 }
 
@@ -35,8 +35,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const newConversion = await prisma.currency.create({
       data: {
         base_code,
-        conversion_rates,
-        update_date: new Date(update_date),
+        conversion_rates: typeof conversion_rates === 'object' ? JSON.stringify(conversion_rates) : conversion_rates,
+        update_date: `${update_date}T00:00:00.000Z`,
       },
     });
     res.status(201).json(newConversion);
@@ -44,10 +44,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { base_code, conversion_rates, update_date }: Currency = req.body;
 
     const updatedConversion = await prisma.currency.update({
-      where: { base_code },
+      where: { base_code: String(base_code) },
       data: {
-        conversion_rates,
-        update_date,
+        conversion_rates: typeof conversion_rates === 'object' ? JSON.stringify(conversion_rates) : conversion_rates,
+        update_date: `${update_date}T00:00:00.000Z`,
       },
     });
     res.status(200).json(updatedConversion);
