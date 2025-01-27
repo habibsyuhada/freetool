@@ -1,355 +1,227 @@
-import { useState, useEffect } from "react";
-import { useDisclosure } from "@mantine/hooks";
-import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Box, Text, Flex } from "@mantine/core";
-import axios from "axios";
+import { Container, Title, Text, Button, SimpleGrid, Card, List, Group, Flex } from "@mantine/core";  
+import { IconCoin, IconCode, IconFingerprint, IconChartPie3, IconBook, IconTools, IconUser, IconHelp, IconCheck } from "@tabler/icons-react";  
+import Link from "next/link";  
+import { theme } from "./theme";
 
-const CurrencyConverter = () => {
-  const [currencies, setCurrencies] = useState([]);
-  const [rateConversion, setRateConversion] = useState([]);
-  const [amountFrom, setAmountFrom] = useState(0);
-  const [amountTo, setAmountTo] = useState(0);
-  const [fromCurrency, setFromCurrency] = useState("USD");
-  const [toCurrency, setToCurrency] = useState("IDR");
-  const [error, setError] = useState("");
-  const [searchValueFrom, setSearchValueFrom] = useState("");
-  const [searchValueTo, setSearchValueTo] = useState("");
-  const [time, setTime] = useState("Per Hours");
-  const [isCollapseFromOpen, { toggle: toggleCollapseFromOpen }] = useDisclosure(false);
-  const [isCollapseToOpen, { toggle: toggleCollapseToOpen }] = useDisclosure(false);
-  const [isAdvanceSettingOpen, { toggle: toggleAdvanceSettingOpen }] = useDisclosure(false);
-  const [fromHoursTable, setFromHoursTable] = useState(0);
-  const [fromMonthTable, setFromMonthTable] = useState(0);
-  const [fromYearTable, setFromYearTable] = useState(0);
-  const [toHoursTable, setToHoursTable] = useState(0);
-  const [toMonthTable, setToMonthTable] = useState(0);
-  const [toYearTable, setToYearTable] = useState(0);
-  const [calcHours, setCalcHours] = useState(8);
-  const [calcDay, setCalcDay] = useState(5);
-  const [calcWeek, setCalcWeek] = useState(4);
-  const [calcMonth, setCalcMonth] = useState(12);
+const tools = [  
+  {  
+    icon: IconCoin,  
+    title: "Currency & Salary Converter",  
+    description: "Convert currencies and salaries with ease. Get real-time exchange rates and make informed financial decisions.",  
+    link: "/currency-salary-converter",  
+  },  
+  {  
+    icon: IconCode,  
+    title: "Task Management",  
+    description: "Manage your tasks efficiently with our intuitive task management tool. Organize, prioritize, and track your progress.",  
+    link: "#",  
+  },  
+  {  
+    icon: IconBook,  
+    title: "Cut URL",  
+    description: "Shorten your URLs quickly and easily. Share links without clutter and track their performance.",  
+    link: "#",  
+  },  
+  {  
+    icon: IconFingerprint,  
+    title: "Encoder & Decoder",  
+    description: "Encode and decode text securely. Protect sensitive information with our easy-to-use tool.",  
+    link: "#",  
+  },  
+  {  
+    icon: IconChartPie3,  
+    title: "QR Code Generator",  
+    description: "Generate QR codes for any link. Perfect for marketing materials, business cards, and more.",  
+    link: "#",  
+  },  
+  {  
+    icon: IconTools,  
+    title: "Image Compressor",  
+    description: "Reduce image file sizes without losing quality. Optimize your images for faster loading times.",  
+    link: "#",  
+  },  
+  {  
+    icon: IconUser,  
+    title: "User Feedback Tool",  
+    description: "Collect user feedback effortlessly. Improve your services based on real user insights.",  
+    link: "#",  
+  },  
+  {  
+    icon: IconHelp,  
+    title: "Help & Support",  
+    description: "Need assistance? Our help center provides answers to common questions and support resources.",  
+    link: "#",  
+  },  
+];  
 
-  const fetchMasterCurrency = async () => {
-    try {
-      const response = await axios.get("/api/master_currency");
-      setCurrencies(response.data);
-    } catch (err) {
-      setError("Failed to fetch currency data master");
-    }
-  };
+const testimonials = [  
+  {  
+    name: "John Doe",  
+    feedback: "FreeTool has transformed the way I manage my tasks. It's incredibly user-friendly!",  
+  },  
+  {  
+    name: "Jane Smith",  
+    feedback: "The currency converter is a lifesaver for my travels. Highly recommend!",  
+  },  
+  {  
+    name: "Alice Johnson",  
+    feedback: "I love the variety of tools available. They save me so much time!",  
+  },  
+];  
 
-  const fetchRateConversion = async () => {
-    try {
-      const response = await axios.get(`/api/currency?base_code=${fromCurrency}`);
-      const conversionData = response.data;
-      conversionData.update_date = conversionData.update_date.split("T")[0];
+const HomePage = () => {   
 
-      let isUpToDate = true;
-      let isInsert = true;
-      if (!conversionData || !conversionData.conversion_rates) {
-        isUpToDate = false;
-      } else if (conversionData.update_date != new Date().toISOString().split("T")[0]) {
-        isUpToDate = false;
-        isInsert = false;
-      }
+  return (  
+    <Container fluid style={{ padding: 0 }}>  
+      {/* Welcome Section */}  
+      <Flex  
+        direction="column"  
+        align="center"  
+        justify="center"  
+        style={{ height: '100vh', textAlign: 'center' }}  
+      >  
+        <Title order={1} style={{ fontWeight: 700, fontSize: '3rem' }}>  
+          Welcome to FreeTool  
+        </Title>  
+        <Text size="lg" mt="sm">  
+          Your one-stop solution for various online tools to simplify your tasks.  
+        </Text>  
+      </Flex>  
 
-      if (!isUpToDate) {
-        const externalResponse = await axios.get(`https://v6.exchangerate-api.com/v6/fe7dfda1cacbc547ab0385d6/latest/${fromCurrency}`);
-        const externalData = externalResponse.data;
+      {/* Wave Divider */}  
+      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
+        <path fill={theme.colors.blue[0]} d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
+      </svg>  
 
-        if (isInsert) {
-          await axios.post("/api/currency", {
-            base_code: externalData.base_code,
-            conversion_rates: externalData.conversion_rates,
-            update_date: new Date().toISOString().split("T")[0],
-          });
-        } else {
-          await axios.put("/api/currency", {
-            base_code: externalData.base_code,
-            conversion_rates: externalData.conversion_rates,
-            update_date: new Date().toISOString().split("T")[0],
-          });
-        }
+      {/* Explore Tools Section */}  
+      <Flex  
+        direction="column"  
+        align="center"  
+        justify="center"  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: theme.colors.blue[0] }}  
+      >  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Explore Our Tools</Title>  
+        <Text size="md" mb="lg" color="dimmed">  
+          We offer a variety of tools designed to help you with everyday tasks. Whether you need to convert currencies, manage tasks, or generate QR codes, we have you covered!  
+        </Text>  
+        <SimpleGrid cols={4} spacing="lg" mt="xl">  
+          {tools.map((tool) => (  
+            <Card key={tool.title} shadow="sm" padding="lg" radius="md" withBorder>  
+              <Card.Section>  
+                <tool.icon size={40} color="#007bff" />  
+              </Card.Section>  
+              <Title order={3} mt="md">{tool.title}</Title>  
+              <Text size="sm" color="dimmed">{tool.description}</Text>  
+              <Link href={tool.link} passHref>  
+                <Button variant="outline" mt="md">Try it now</Button>  
+              </Link>  
+            </Card>  
+          ))}  
+        </SimpleGrid>  
+      </Flex>  
 
-        setRateConversion(externalData.conversion_rates);
-      } else {
-        const rates = JSON.parse(conversionData.conversion_rates);
-        setRateConversion(rates);
-      }
-    } catch (err) {
-      console.log(err);
-      setError("Failed to fetch currency data rate");
-    }
-  };
+      {/* Wave Divider */}  
+      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
+        <path fill="#f0f4ff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
+      </svg>  
 
-  useEffect(() => {
-    fetchMasterCurrency();
-    fetchRateConversion();
-  }, []);
+      {/* Why Choose Us Section */}  
+      <Flex  
+        direction="column"  
+        align="center"  
+        justify="center"  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#ffffff' }}  
+      >  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Why Choose Us?</Title>  
+        <Text size="md" mb="lg" color="dimmed">  
+          Our tools are designed with user experience in mind. Here are a few reasons why you should choose FreeTool:  
+        </Text>  
+        <List spacing="sm" size="sm" center>  
+          <List.Item icon={<IconCheck size={16} color="green" />}>User-friendly interface for easy navigation.</List.Item>  
+          <List.Item icon={<IconCheck size={16} color="green" />}>Fast and reliable performance.</List.Item>  
+          <List.Item icon={<IconCheck size={16} color="green" />}>Regular updates and new features based on user feedback.</List.Item>  
+          <List.Item icon={<IconCheck size={16} color="green" />}>Completely free to use with no hidden charges.</List.Item>  
+        </List>  
+      </Flex>  
 
-  const handleFromCurrencyChange = (value: string) => {
-    setFromCurrency(value);
-  };
+      {/* Wave Divider */}  
+      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
+        <path fill="#f0f4ff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
+      </svg>  
 
-  useEffect(() => {
-    fetchRateConversion();
-  }, [fromCurrency]);
+      {/* User Testimonials Section */}  
+      <Flex  
+        direction="column"  
+        align="center"  
+        justify="center"  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#f0f4ff' }}  
+      >  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>User Testimonials</Title>  
+        <Text size="md" mb="lg" color="dimmed">  
+          Hear what our users have to say about FreeTool:  
+        </Text>  
+        <SimpleGrid cols={3} spacing="lg">  
+          {testimonials.map((testimonial, index) => (  
+            <Card key={index} shadow="sm" padding="lg" radius="md" withBorder>  
+              <Text size="sm" italic>"{testimonial.feedback}"</Text>  
+              <Text align="right" size="sm" weight={500} mt="md">- {testimonial.name}</Text>  
+            </Card>  
+          ))}  
+        </SimpleGrid>  
+      </Flex>  
 
-  const handleAmountFromChange = (value: string) => {
-    let numericValue = value;
-    numericValue = numericValue.replace(/,/g, "");
-    numericValue = parseFloat(numericValue);
-    if (isNaN(numericValue)) {
-      numericValue = 0;
-    }
-    setAmountFrom(value);
+      {/* Wave Divider */}  
+      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
+        <path fill="#ffffff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
+      </svg>  
 
-    const rate = rateConversion[toCurrency];
-    const conversion = numericValue * rate;
-    setAmountTo(formatNumber(parseFloat(conversion)));
-    handleTableInformation(numericValue, "from");
-  };
+      {/* Join Our Community Section */}  
+      <Flex  
+        direction="column"  
+        align="center"  
+        justify="center"  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#ffffff' }}  
+      >  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Join Our Community</Title>  
+        <Text size="md" mb="lg" color="dimmed">  
+          Sign up today to access exclusive features and stay updated with the latest tools and updates.  
+        </Text>  
+        <Group position="center">  
+          <Link href="/signup" passHref>  
+            <Button size="lg">Sign Up</Button>  
+          </Link>  
+          <Link href="/login" passHref>  
+            <Button size="lg" variant="outline">Log In</Button>  
+          </Link>  
+        </Group>  
+      </Flex>  
 
-  const handleAmountToChange = (value: string) => {
-    let numericValue = value;
-    numericValue = numericValue.replace(/,/g, "");
-    numericValue = parseFloat(numericValue);
-    if (isNaN(numericValue)) {
-      numericValue = 0;
-    }
-    setAmountTo(value);
+      {/* Wave Divider */}  
+      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
+        <path fill="#f0f4ff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
+      </svg>  
 
-    const rate = rateConversion[toCurrency];
-    const conversion = numericValue / rate;
-    setAmountFrom(formatNumber(parseFloat(conversion)));
-    handleTableInformation(numericValue, "to");
-  };
+      {/* Get in Touch Section */}  
+      <Flex  
+        direction="column"  
+        align="center"  
+        justify="center"  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#f0f4ff' }}  
+      >  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Get in Touch</Title>  
+        <Text size="md" mb="lg" color="dimmed">  
+          Have questions or feedback? Reach out to us through our contact page.  
+        </Text>  
+        <Link href="/contact" passHref>  
+          <Button variant="outline" size="lg">Contact Us</Button>  
+        </Link>  
+      </Flex>  
 
-  const handleTimeChange = (value) => {
-    console.log(value);
-    setTime(value);
-    handleTableInformation(value, "time");
-  };
+      <Text align="center" size="sm" color="dimmed" mt="lg">  
+        &copy; {new Date().getFullYear()} FreeTool. All rights reserved.  
+      </Text>  
+    </Container>  
+  );  
+};  
 
-  const handleTableInformation = (value, category) => {
-    const rate = rateConversion[toCurrency];
-    let sourceValue = value;
-    let sourceTime = time;
-    let sourceCategory = category;
-    let sourceHours;
-    let sourceMonth;
-    let sourceYear;
-
-    if (sourceCategory == "time") {
-      sourceTime = value;
-      sourceValue = amountFrom;
-      sourceCategory = "from";
-    }
-
-    if (sourceTime == "Per Hours") {
-      sourceHours = sourceValue * rate;
-      if (sourceCategory == "to") {
-        sourceHours = sourceValue / rate;
-      }
-      sourceMonth = sourceHours * calcHours * calcDay * calcWeek;
-      sourceYear = sourceMonth * calcMonth;
-    } else if (sourceTime == "Per Month") {
-      sourceMonth = sourceValue * rate;
-      if (sourceCategory == "to") {
-        sourceMonth = sourceValue / rate;
-      }
-      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
-      sourceYear = sourceMonth * calcMonth;
-    } else if (sourceTime == "Per Year") {
-      sourceYear = sourceValue * rate;
-      if (sourceCategory == "to") {
-        sourceYear = sourceValue / rate;
-      }
-      sourceMonth = sourceYear / calcMonth;
-      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
-    }
-
-    if (sourceCategory == "from") {
-      setFromHoursTable(formatNumber(sourceHours));
-      setFromMonthTable(formatNumber(sourceMonth));
-      setFromYearTable(formatNumber(sourceYear));
-      setToHoursTable(formatNumber(sourceHours / rate));
-      setToMonthTable(formatNumber(sourceMonth / rate));
-      setToYearTable(formatNumber(sourceYear / rate));
-    } else if (sourceCategory == "to") {
-      setToHoursTable(formatNumber(sourceHours));
-      setToMonthTable(formatNumber(sourceMonth));
-      setToYearTable(formatNumber(sourceYear));
-      setFromHoursTable(formatNumber(sourceHours * rate));
-      setFromMonthTable(formatNumber(sourceMonth * rate));
-      setFromYearTable(formatNumber(sourceYear * rate));
-    }
-  };
-
-  const formatNumber = (num) => {
-    const res = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num);
-    return res;
-  };
-
-  useEffect(() => {
-    handleTableInformation(amountFrom, "from");
-  }, [calcHours, calcDay, calcWeek, calcMonth]);
-
-  return (
-    <Container>
-      <Title order={2} align="center" mt="md" mb="md">
-        Currency & Salary
-        <br />
-        Converter
-      </Title>
-      {error && (
-        <Alert title="Error!" color="red">
-          {error}
-        </Alert>
-      )}
-      <SimpleGrid cols={{ base: 1, sm: 2 }} mt="xl" pt="xl">
-        <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-          <Select
-            value={fromCurrency}
-            searchValue={searchValueFrom}
-            onSearchChange={setSearchValueFrom}
-            onChange={handleFromCurrencyChange}
-            onFocus={() => setSearchValueFrom("")}
-            data={currencies.map((currency) => ({
-              value: currency.code,
-              label: `${currency.code} - ${currency.name}`,
-            }))}
-            searchable
-            allowDeselect={false}
-          />
-          <TextInput type="text" value={amountFrom} onChange={(e) => handleAmountFromChange(e.target.value)} placeholder="Amount From" onFocus={(e) => e.target.select()} />
-        </SimpleGrid>
-        <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-          <Select
-            value={toCurrency}
-            searchValue={searchValueTo}
-            onSearchChange={setSearchValueTo}
-            onChange={setToCurrency}
-            onFocus={() => setSearchValueTo("")}
-            data={currencies.map((currency) => ({
-              value: currency.code,
-              label: `${currency.code} - ${currency.name}`,
-            }))}
-            searchable
-            allowDeselect={false}
-          />
-          <TextInput type="text" value={amountTo} onChange={(e) => handleAmountToChange(e.target.value)} placeholder="Amount To" onFocus={(e) => e.target.select()} />
-        </SimpleGrid>
-      </SimpleGrid>
-
-      <Grid mt="md" justify="center" align="center">
-        <Grid.Col span={{ base: 12, sm: 6, lg: 4 }}>
-          <Select value={time} onChange={handleTimeChange} data={["Per Hours", "Per Month", "Per Year"]} />
-        </Grid.Col>
-      </Grid>
-
-      <Grid>
-        <Grid.Col span={{ base: 12, sm: 6 }}>
-          <Card withBorder shadow="sm" radius="md">
-            <Card.Section>
-              <Button fullWidth onClick={toggleCollapseFromOpen}>
-                {fromCurrency} {formatNumber(String(amountFrom).replace(/,/g, ""))} {time} mean ...
-              </Button>
-            </Card.Section>
-            <Card.Section>
-              <Collapse in={isCollapseFromOpen} transitionDuration={500} transitionTimingFunction="linear">
-                <Box p="md" style={{ overflow: "auto" }}>
-                  <Table withRowBorders={false}>
-                    <Table.Tbody>
-                      <Table.Tr key={"Per Hours"}>
-                        <Table.Td>{toCurrency}</Table.Td>
-                        <Table.Td>{fromHoursTable}</Table.Td>
-                        <Table.Td>{"Per Hours"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Month"}>
-                        <Table.Td>{toCurrency}</Table.Td>
-                        <Table.Td>{fromMonthTable}</Table.Td>
-                        <Table.Td>{"Per Month"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Year"}>
-                        <Table.Td>{toCurrency}</Table.Td>
-                        <Table.Td>{fromYearTable}</Table.Td>
-                        <Table.Td>{"Per Year"}</Table.Td>
-                      </Table.Tr>
-                    </Table.Tbody>
-                  </Table>
-                </Box>
-              </Collapse>
-            </Card.Section>
-          </Card>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 6 }}>
-          <Card withBorder shadow="sm" radius="md">
-            <Card.Section>
-              <Button fullWidth onClick={toggleCollapseToOpen}>
-                {toCurrency} {formatNumber(String(amountTo).replace(/,/g, ""))} {time} mean ...
-              </Button>
-            </Card.Section>
-            <Card.Section>
-              <Collapse in={isCollapseToOpen} transitionDuration={500} transitionTimingFunction="linear">
-                <Box p="md" style={{ overflow: "auto" }}>
-                  <Table withRowBorders={false}>
-                    <Table.Tbody>
-                      <Table.Tr key={"Per Hours"}>
-                        <Table.Td>{fromCurrency}</Table.Td>
-                        <Table.Td>{toHoursTable}</Table.Td>
-                        <Table.Td>{"Per Hours"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Month"}>
-                        <Table.Td>{fromCurrency}</Table.Td>
-                        <Table.Td>{toMonthTable}</Table.Td>
-                        <Table.Td>{"Per Month"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Year"}>
-                        <Table.Td>{fromCurrency}</Table.Td>
-                        <Table.Td>{toYearTable}</Table.Td>
-                        <Table.Td>{"Per Year"}</Table.Td>
-                      </Table.Tr>
-                    </Table.Tbody>
-                  </Table>
-                </Box>
-              </Collapse>
-            </Card.Section>
-          </Card>
-        </Grid.Col>
-      </Grid>
-
-      <Grid>
-        <Grid.Col span={{ base: 12 }}>
-          <Card withBorder shadow="sm" radius="md">
-            <Card.Section>
-              <Button fullWidth onClick={toggleAdvanceSettingOpen}>
-                Advance Setting
-              </Button>
-            </Card.Section>
-            <Card.Section>
-              <Collapse in={isAdvanceSettingOpen} transitionDuration={500} transitionTimingFunction="linear">
-                <Box p="md" style={{ overflow: "auto" }}>
-                  <SimpleGrid cols={{ base: 1, sm: 2 }}>
-                    <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-                      <TextInput type="number" value={calcHours} onChange={(e) => setCalcHours(Number(e.target.value))} placeholder="Hours" onFocus={(e) => e.target.select()} leftSection={"1 Day = "} leftSectionWidth={80} rightSection={"Hours"} rightSectionWidth={80} />
-                      <TextInput type="number" value={calcDay} onChange={(e) => setCalcDay(Number(e.target.value))} placeholder="Days" onFocus={(e) => e.target.select()} leftSection={"1 Week = "} leftSectionWidth={80} rightSection={"Days"} rightSectionWidth={80} />
-                    </SimpleGrid>
-                    <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-                      <TextInput type="number" value={calcWeek} onChange={(e) => setCalcWeek(Number(e.target.value))} placeholder="Weeks" onFocus={(e) => e.target.select()} leftSection={"1 Month = "} leftSectionWidth={80} rightSection={"Weeks"} rightSectionWidth={80} />
-                      <TextInput type="number" value={calcMonth} onChange={(e) => setCalcMonth(Number(e.target.value))} placeholder="Months" onFocus={(e) => e.target.select()} leftSection={"1 Year = "} leftSectionWidth={80} rightSection={"Months"} rightSectionWidth={80} />
-                    </SimpleGrid>
-                  </SimpleGrid>
-                </Box>
-              </Collapse>
-            </Card.Section>
-          </Card>
-        </Grid.Col>
-      </Grid>
-    </Container>
-  );
-};
-
-export default CurrencyConverter;
+export default HomePage;

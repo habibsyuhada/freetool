@@ -1,9 +1,17 @@
+.headerBox {
+  position: sticky; /* Make the header sticky */  
+  top: 0; /* Stick to the top of the viewport */  
+  z-index: 1000; /* Ensure it stays above other content */  
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .header {
   height: 60px;
   padding-left: var(--mantine-spacing-md);
   padding-right: var(--mantine-spacing-md);
   border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
-}
+}  
 
 .link {
   display: flex;

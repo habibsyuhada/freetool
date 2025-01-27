@@ -13,11 +13,14 @@
     "@mantine/hooks": "^7.16.1",
     "@mantinex/mantine-logo": "^1.1.0",
     "@prisma/client": "^6.2.1",
+    "@reduxjs/toolkit": "^2.5.1",
     "@tabler/icons-react": "^3.29.0",
     "axios": "^1.7.9",
     "next": "15.1.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-redux": "^9.2.0",
+    "redux": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
