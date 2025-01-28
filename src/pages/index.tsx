@@ -2,6 +2,9 @@ import { Container, Title, Text, Button, SimpleGrid, Card, List, Group, Flex } f
 import { IconCoin, IconCode, IconFingerprint, IconChartPie3, IconBook, IconTools, IconUser, IconHelp, IconCheck } from "@tabler/icons-react";  
 import Link from "next/link";  
 import { theme } from "./theme";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useEffect } from "react";
 
 const tools = [  
   {  
@@ -70,6 +73,12 @@ const testimonials = [
 ];  
 
 const HomePage = () => {   
+  const themeApp = useSelector((state: RootState) => state.theme.theme);
+  let bgColor = themeApp === 'light' ? '#f0f4ff' : '#1a1b1e';
+
+  useEffect(() => {
+    console.log("themeApp", bgColor);
+  }, [themeApp]);
 
   return (  
     <Container fluid style={{ padding: 0 }}>  
@@ -88,17 +97,15 @@ const HomePage = () => {
         </Text>  
       </Flex>  
 
-      {/* Wave Divider */}  
-      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
-        <path fill={theme.colors.blue[0]} d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
-      </svg>  
+      {/* Wave Divider */} 
+      <svg style={{ display: 'block', width: '100%', height: 'auto' }} viewBox="0 0 1440 320"><path fill={bgColor} fill-opacity="1" d="M0,96L120,122.7C240,149,480,203,720,218.7C960,235,1200,213,1320,202.7L1440,192L1440,320L1320,320C1200,320,960,320,720,320C480,320,240,320,120,320L0,320Z"></path></svg>
 
       {/* Explore Tools Section */}  
       <Flex  
         direction="column"  
         align="center"  
         justify="center"  
-        style={{ height: '100vh', textAlign: 'center', backgroundColor: theme.colors.blue[0] }}  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: bgColor }}  
       >  
         <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Explore Our Tools</Title>  
         <Text size="md" mb="lg" color="dimmed">  
@@ -121,18 +128,16 @@ const HomePage = () => {
       </Flex>  
 
       {/* Wave Divider */}  
-      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
-        <path fill="#f0f4ff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
-      </svg>  
+      <svg style={{ display: 'block', width: '100%', height: 'auto' }} viewBox="0 0 1440 320"><path fill={bgColor} fill-opacity="1" d="M0,64L40,80C80,96,160,128,240,133.3C320,139,400,117,480,144C560,171,640,245,720,256C800,267,880,213,960,165.3C1040,117,1120,75,1200,64C1280,53,1360,75,1400,85.3L1440,96L1440,0L1400,0C1360,0,1280,0,1200,0C1120,0,1040,0,960,0C880,0,800,0,720,0C640,0,560,0,480,0C400,0,320,0,240,0C160,0,80,0,40,0L0,0Z"></path></svg>
 
       {/* Why Choose Us Section */}  
       <Flex  
         direction="column"  
         align="center"  
         justify="center"  
-        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#ffffff' }}  
+        style={{ height: '100vh', textAlign: 'center' }}  
       >  
-        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Why Choose Us?</Title>  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem' }}>Why Choose Us?</Title>  
         <Text size="md" mb="lg" color="dimmed">  
           Our tools are designed with user experience in mind. Here are a few reasons why you should choose FreeTool:  
         </Text>  
@@ -145,18 +150,16 @@ const HomePage = () => {
       </Flex>  
 
       {/* Wave Divider */}  
-      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
-        <path fill="#f0f4ff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
-      </svg>  
+      <svg style={{ display: 'block', width: '100%', height: 'auto' }} viewBox="0 0 1440 320"><path fill={bgColor} fill-opacity="1" d="M0,64L40,53.3C80,43,160,21,240,58.7C320,96,400,192,480,202.7C560,213,640,139,720,90.7C800,43,880,21,960,21.3C1040,21,1120,43,1200,69.3C1280,96,1360,128,1400,144L1440,160L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path></svg>
 
       {/* User Testimonials Section */}  
       <Flex  
         direction="column"  
         align="center"  
         justify="center"  
-        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#f0f4ff' }}  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: bgColor }}  
       >  
-        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>User Testimonials</Title>  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem' }}>User Testimonials</Title>  
         <Text size="md" mb="lg" color="dimmed">  
           Hear what our users have to say about FreeTool:  
         </Text>  
@@ -170,19 +173,17 @@ const HomePage = () => {
         </SimpleGrid>  
       </Flex>  
 
-      {/* Wave Divider */}  
-      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
-        <path fill="#ffffff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
-      </svg>  
+      {/* Wave Divider */}
+      <svg style={{ display: 'block', width: '100%', height: 'auto' }} viewBox="0 0 1440 320"><path fill={bgColor} fill-opacity="1" d="M0,96L40,117.3C80,139,160,181,240,202.7C320,224,400,224,480,208C560,192,640,160,720,138.7C800,117,880,107,960,117.3C1040,128,1120,160,1200,154.7C1280,149,1360,107,1400,85.3L1440,64L1440,0L1400,0C1360,0,1280,0,1200,0C1120,0,1040,0,960,0C880,0,800,0,720,0C640,0,560,0,480,0C400,0,320,0,240,0C160,0,80,0,40,0L0,0Z"></path></svg>
 
       {/* Join Our Community Section */}  
       <Flex  
         direction="column"  
         align="center"  
         justify="center"  
-        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#ffffff' }}  
+        style={{ height: '100vh', textAlign: 'center' }}  
       >  
-        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Join Our Community</Title>  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem' }}>Join Our Community</Title>  
         <Text size="md" mb="lg" color="dimmed">  
           Sign up today to access exclusive features and stay updated with the latest tools and updates.  
         </Text>  
@@ -196,19 +197,17 @@ const HomePage = () => {
         </Group>  
       </Flex>  
 
-      {/* Wave Divider */}  
-      <svg viewBox="0 0 1440 320" style={{ display: 'block', width: '100%', height: 'auto' }}>  
-        <path fill="#f0f4ff" d="M0,128L30,144C60,160,120,192,180,202.7C240,213,300,203,360,186.7C420,171,480,149,540,144C600,139,660,149,720,160C780,171,840,181,900,186.7C960,192,1020,192,1080,186.7C1140,181,1200,171,1260,160C1320,149,1380,139,1410,134.7L1440,128L1440,320L1410,320C1380,320,1320,320,1260,320C1200,320,1140,320,1080,320C1020,320,960,320,900,320C840,320,780,320,720,320C660,320,600,320,540,320C480,320,420,320,360,320C300,320,240,320,180,320C120,320,60,320,30,320H0Z"></path>  
-      </svg>  
+      {/* Wave Divider */}
+      <svg style={{ display: 'block', width: '100%', height: 'auto' }} viewBox="0 0 1440 320"><path fill={bgColor} fill-opacity="1" d="M0,160L60,149.3C120,139,240,117,360,138.7C480,160,600,224,720,213.3C840,203,960,117,1080,74.7C1200,32,1320,32,1380,32L1440,32L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path></svg>
 
       {/* Get in Touch Section */}  
       <Flex  
         direction="column"  
         align="center"  
         justify="center"  
-        style={{ height: '100vh', textAlign: 'center', backgroundColor: '#f0f4ff' }}  
+        style={{ height: '100vh', textAlign: 'center', backgroundColor: bgColor }}  
       >  
-        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem', color: '#1a1b1e' }}>Get in Touch</Title>  
+        <Title order={2} style={{ fontWeight: 600, fontSize: '2.5rem' }}>Get in Touch</Title>  
         <Text size="md" mb="lg" color="dimmed">  
           Have questions or feedback? Reach out to us through our contact page.  
         </Text>  
