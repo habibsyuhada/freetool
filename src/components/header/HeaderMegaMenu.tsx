@@ -12,32 +12,38 @@ const mockdata = [
   {
     icon: IconCode,
     title: "Currency & Salary Converter",
-    description: "This Pokémons cry is very loud and distracting",
+    description: "Convert currencies and calculate salaries with real-time exchange rates",
+    link: "/currency-salary-converter"
   },
   {
     icon: IconCoin,
     title: "Task Management",
-    description: "The fluid of Smeargles tail secretions changes",
+    description: "Organize, track, and manage your tasks efficiently with our intuitive tool",
+    link: "/coming-soon"
   },
   {
     icon: IconBook,
     title: "Cut Url",
-    description: "Yanma is capable of seeing 360 degrees without",
+    description: "Shorten your long URLs into clean, manageable links instantly",
+    link: "/coming-soon"
   },
   {
     icon: IconFingerprint,
     title: "Encoder & Decoder",
-    description: "The shells rounded shape and the grooves on its.",
+    description: "Encode and decode text with various encryption methods securely",
+    link: "/coming-soon"
   },
   {
     icon: IconChartPie3,
     title: "QR Generator",
-    description: "This Pokémon uses its flying ability to quickly chase",
+    description: "Create custom QR codes for your links, text, or contact information",
+    link: "/coming-soon"
   },
   {
     icon: IconNotification,
     title: "Image Compressor",
-    description: "Combusken battles with the intensely hot flames it spews",
+    description: "Compress and optimize your images without losing quality",
+    link: "/coming-soon"
   },
 ];
 
@@ -69,21 +75,23 @@ export function HeaderMegaMenu() {
   });
 
   const links = mockdata.map((item) => (
-    <UnstyledButton className={classes.subLink} key={item.title}>
-      <Group wrap="nowrap" align="flex-start">
-        <ThemeIcon size={34} variant="default" radius="md">
-          <item.icon size={22} color={theme.colors.blue[6]} />
-        </ThemeIcon>
-        <div>
-          <Text size="sm" fw={500}>
-            {item.title}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {item.description}
-          </Text>
-        </div>
-      </Group>
-    </UnstyledButton>
+    <Link href={item.link} key={item.title} style={{ textDecoration: 'none' }}>
+      <UnstyledButton className={classes.subLink}>
+        <Group wrap="nowrap" align="flex-start">
+          <ThemeIcon size={34} variant="default" radius="md">
+            <item.icon size={22} color={theme.colors.blue[6]} />
+          </ThemeIcon>
+          <div>
+            <Text size="sm" fw={500}>
+              {item.title}
+            </Text>
+            <Text size="xs" c="dimmed">
+              {item.description}
+            </Text>
+          </div>
+        </Group>
+      </UnstyledButton>
+    </Link>
   ));
 
   return (
@@ -97,7 +105,7 @@ export function HeaderMegaMenu() {
           </Link>
 
           <Group h="100%" gap={0} visibleFrom="sm">
-            <a href="#" className={classes.link}>
+            <a href="/" className={classes.link}>
               Home
             </a>
             <HoverCard width={{ base: "100%", lg: "80%" }} position="bottom" radius="md" shadow="md" withinPortal>
@@ -136,9 +144,9 @@ export function HeaderMegaMenu() {
                         Sign in or create an account to access exclusive features and content. Best of all, it's completely free!
                       </Text>
                     </div>
-                    <div>
+                    <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
                       <Button variant="default">Log In / Sign</Button>
-                    </div>
+                    </Link>
                   </Group>
                 </div>
               </HoverCard.Dropdown>
@@ -147,16 +155,27 @@ export function HeaderMegaMenu() {
               Blog
             </a>
             <a href="#" className={classes.link}>
-              Feedback
+              Contact Us
             </a>
           </Group>
 
           <Group visibleFrom="sm">
             <MantineProvider theme={themeSwitch}>
-              <Switch size="md" color="dark.4" onLabel={<IconSun size={16} stroke={2.5} color="var(--mantine-color-yellow-4)" />} offLabel={<IconMoonStars size={16} stroke={2.5} color="var(--mantine-color-blue-6)" />} checked={themeApp === 'dark'} onChange={handleToggleTheme} style={{ cursor: "pointer" }} />
+              <Switch 
+                size="md" 
+                color="dark.4" 
+                onLabel={<IconSun size={16} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
+                offLabel={<IconMoonStars size={16} stroke={2.5} color="var(--mantine-color-blue-6)" />}
+                checked={themeApp === 'dark'}
+                onChange={handleToggleTheme}
+              />
             </MantineProvider>
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
+            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
+              <Button variant="default">Log in</Button>
+            </Link>
+            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
+              <Button>Sign up</Button>
+            </Link>
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
@@ -167,7 +186,7 @@ export function HeaderMegaMenu() {
         <ScrollArea h="calc(100vh - 80px" mx="-md">
           <Divider my="sm" />
 
-          <a href="#" className={classes.link}>
+          <a href="/" className={classes.link}>
             Home
           </a>
           <UnstyledButton className={classes.link} onClick={toggleLinks}>
@@ -183,7 +202,7 @@ export function HeaderMegaMenu() {
             Blog
           </a>
           <a href="#" className={classes.link}>
-            Feedback
+            Contact Us
           </a>
 
           <Divider my="sm" />
@@ -195,8 +214,12 @@ export function HeaderMegaMenu() {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
+            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
+              <Button variant="default" fullWidth>Log in</Button>
+            </Link>
+            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
+              <Button fullWidth>Sign up</Button>
+            </Link>
           </Group>
         </ScrollArea>
       </Drawer>

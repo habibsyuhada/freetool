@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useDisclosure } from "@mantine/hooks";
 import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Box, Text, Flex } from "@mantine/core";
 import axios from "axios";
+import Layout from "@/components/layout/Layout";
 
 const CurrencyConverter = () => {
   const [currencies, setCurrencies] = useState([]);
@@ -198,157 +199,163 @@ const CurrencyConverter = () => {
   }, [calcHours, calcDay, calcWeek, calcMonth]);
 
   return (
-    <Container>
-      <Title order={2} align="center" mt="md" mb="md">
-        Currency & Salary
-        <br />
-        Converter
-      </Title>
-      {error && (
-        <Alert title="Error!" color="red">
-          {error}
-        </Alert>
-      )}
-      <SimpleGrid cols={{ base: 1, sm: 2 }} mt="xl" pt="xl">
-        <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-          <Select
-            value={fromCurrency}
-            searchValue={searchValueFrom}
-            onSearchChange={setSearchValueFrom}
-            onChange={handleFromCurrencyChange}
-            onFocus={() => setSearchValueFrom("")}
-            data={currencies.map((currency) => ({
-              value: currency.code,
-              label: `${currency.code} - ${currency.name}`,
-            }))}
-            searchable
-            allowDeselect={false}
-          />
-          <TextInput type="text" value={amountFrom} onChange={(e) => handleAmountFromChange(e.target.value)} placeholder="Amount From" onFocus={(e) => e.target.select()} />
+    <Layout 
+      title="Currency & Salary Converter"
+      description="Convert currencies and calculate salaries with real-time exchange rates. Free online currency converter tool."
+      keywords="currency converter, salary calculator, exchange rates, money converter"
+    >
+      <Container>
+        <Title order={2} align="center" mt="md" mb="md">
+          Currency & Salary
+          <br />
+          Converter
+        </Title>
+        {error && (
+          <Alert title="Error!" color="red">
+            {error}
+          </Alert>
+        )}
+        <SimpleGrid cols={{ base: 1, sm: 2 }} mt="xl" pt="xl">
+          <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
+            <Select
+              value={fromCurrency}
+              searchValue={searchValueFrom}
+              onSearchChange={setSearchValueFrom}
+              onChange={handleFromCurrencyChange}
+              onFocus={() => setSearchValueFrom("")}
+              data={currencies.map((currency) => ({
+                value: currency.code,
+                label: `${currency.code} - ${currency.name}`,
+              }))}
+              searchable
+              allowDeselect={false}
+            />
+            <TextInput type="text" value={amountFrom} onChange={(e) => handleAmountFromChange(e.target.value)} placeholder="Amount From" onFocus={(e) => e.target.select()} />
+          </SimpleGrid>
+          <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
+            <Select
+              value={toCurrency}
+              searchValue={searchValueTo}
+              onSearchChange={setSearchValueTo}
+              onChange={setToCurrency}
+              onFocus={() => setSearchValueTo("")}
+              data={currencies.map((currency) => ({
+                value: currency.code,
+                label: `${currency.code} - ${currency.name}`,
+              }))}
+              searchable
+              allowDeselect={false}
+            />
+            <TextInput type="text" value={amountTo} onChange={(e) => handleAmountToChange(e.target.value)} placeholder="Amount To" onFocus={(e) => e.target.select()} />
+          </SimpleGrid>
         </SimpleGrid>
-        <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-          <Select
-            value={toCurrency}
-            searchValue={searchValueTo}
-            onSearchChange={setSearchValueTo}
-            onChange={setToCurrency}
-            onFocus={() => setSearchValueTo("")}
-            data={currencies.map((currency) => ({
-              value: currency.code,
-              label: `${currency.code} - ${currency.name}`,
-            }))}
-            searchable
-            allowDeselect={false}
-          />
-          <TextInput type="text" value={amountTo} onChange={(e) => handleAmountToChange(e.target.value)} placeholder="Amount To" onFocus={(e) => e.target.select()} />
-        </SimpleGrid>
-      </SimpleGrid>
 
-      <Grid mt="md" justify="center" align="center">
-        <Grid.Col span={{ base: 12, sm: 6, lg: 4 }}>
-          <Select value={time} onChange={handleTimeChange} data={["Per Hours", "Per Month", "Per Year"]} />
-        </Grid.Col>
-      </Grid>
+        <Grid mt="md" justify="center" align="center">
+          <Grid.Col span={{ base: 12, sm: 6, lg: 4 }}>
+            <Select value={time} onChange={handleTimeChange} data={["Per Hours", "Per Month", "Per Year"]} />
+          </Grid.Col>
+        </Grid>
 
-      <Grid>
-        <Grid.Col span={{ base: 12, sm: 6 }}>
-          <Card withBorder shadow="sm" radius="md">
-            <Card.Section>
-              <Button fullWidth onClick={toggleCollapseFromOpen}>
-                {fromCurrency} {formatNumber(String(amountFrom).replace(/,/g, ""))} {time} mean ...
-              </Button>
-            </Card.Section>
-            <Card.Section>
-              <Collapse in={isCollapseFromOpen} transitionDuration={500} transitionTimingFunction="linear">
-                <Box p="md" style={{ overflow: "auto" }}>
-                  <Table withRowBorders={false}>
-                    <Table.Tbody>
-                      <Table.Tr key={"Per Hours"}>
-                        <Table.Td>{toCurrency}</Table.Td>
-                        <Table.Td>{fromHoursTable}</Table.Td>
-                        <Table.Td>{"Per Hours"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Month"}>
-                        <Table.Td>{toCurrency}</Table.Td>
-                        <Table.Td>{fromMonthTable}</Table.Td>
-                        <Table.Td>{"Per Month"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Year"}>
-                        <Table.Td>{toCurrency}</Table.Td>
-                        <Table.Td>{fromYearTable}</Table.Td>
-                        <Table.Td>{"Per Year"}</Table.Td>
-                      </Table.Tr>
-                    </Table.Tbody>
-                  </Table>
-                </Box>
-              </Collapse>
-            </Card.Section>
-          </Card>
-        </Grid.Col>
-        <Grid.Col span={{ base: 12, sm: 6 }}>
-          <Card withBorder shadow="sm" radius="md">
-            <Card.Section>
-              <Button fullWidth onClick={toggleCollapseToOpen}>
-                {toCurrency} {formatNumber(String(amountTo).replace(/,/g, ""))} {time} mean ...
-              </Button>
-            </Card.Section>
-            <Card.Section>
-              <Collapse in={isCollapseToOpen} transitionDuration={500} transitionTimingFunction="linear">
-                <Box p="md" style={{ overflow: "auto" }}>
-                  <Table withRowBorders={false}>
-                    <Table.Tbody>
-                      <Table.Tr key={"Per Hours"}>
-                        <Table.Td>{fromCurrency}</Table.Td>
-                        <Table.Td>{toHoursTable}</Table.Td>
-                        <Table.Td>{"Per Hours"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Month"}>
-                        <Table.Td>{fromCurrency}</Table.Td>
-                        <Table.Td>{toMonthTable}</Table.Td>
-                        <Table.Td>{"Per Month"}</Table.Td>
-                      </Table.Tr>
-                      <Table.Tr key={"Per Year"}>
-                        <Table.Td>{fromCurrency}</Table.Td>
-                        <Table.Td>{toYearTable}</Table.Td>
-                        <Table.Td>{"Per Year"}</Table.Td>
-                      </Table.Tr>
-                    </Table.Tbody>
-                  </Table>
-                </Box>
-              </Collapse>
-            </Card.Section>
-          </Card>
-        </Grid.Col>
-      </Grid>
+        <Grid>
+          <Grid.Col span={{ base: 12, sm: 6 }}>
+            <Card withBorder shadow="sm" radius="md">
+              <Card.Section>
+                <Button fullWidth onClick={toggleCollapseFromOpen}>
+                  {fromCurrency} {formatNumber(String(amountFrom).replace(/,/g, ""))} {time} mean ...
+                </Button>
+              </Card.Section>
+              <Card.Section>
+                <Collapse in={isCollapseFromOpen} transitionDuration={500} transitionTimingFunction="linear">
+                  <Box p="md" style={{ overflow: "auto" }}>
+                    <Table withRowBorders={false}>
+                      <Table.Tbody>
+                        <Table.Tr key={"Per Hours"}>
+                          <Table.Td>{toCurrency}</Table.Td>
+                          <Table.Td>{fromHoursTable}</Table.Td>
+                          <Table.Td>{"Per Hours"}</Table.Td>
+                        </Table.Tr>
+                        <Table.Tr key={"Per Month"}>
+                          <Table.Td>{toCurrency}</Table.Td>
+                          <Table.Td>{fromMonthTable}</Table.Td>
+                          <Table.Td>{"Per Month"}</Table.Td>
+                        </Table.Tr>
+                        <Table.Tr key={"Per Year"}>
+                          <Table.Td>{toCurrency}</Table.Td>
+                          <Table.Td>{fromYearTable}</Table.Td>
+                          <Table.Td>{"Per Year"}</Table.Td>
+                        </Table.Tr>
+                      </Table.Tbody>
+                    </Table>
+                  </Box>
+                </Collapse>
+              </Card.Section>
+            </Card>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 6 }}>
+            <Card withBorder shadow="sm" radius="md">
+              <Card.Section>
+                <Button fullWidth onClick={toggleCollapseToOpen}>
+                  {toCurrency} {formatNumber(String(amountTo).replace(/,/g, ""))} {time} mean ...
+                </Button>
+              </Card.Section>
+              <Card.Section>
+                <Collapse in={isCollapseToOpen} transitionDuration={500} transitionTimingFunction="linear">
+                  <Box p="md" style={{ overflow: "auto" }}>
+                    <Table withRowBorders={false}>
+                      <Table.Tbody>
+                        <Table.Tr key={"Per Hours"}>
+                          <Table.Td>{fromCurrency}</Table.Td>
+                          <Table.Td>{toHoursTable}</Table.Td>
+                          <Table.Td>{"Per Hours"}</Table.Td>
+                        </Table.Tr>
+                        <Table.Tr key={"Per Month"}>
+                          <Table.Td>{fromCurrency}</Table.Td>
+                          <Table.Td>{toMonthTable}</Table.Td>
+                          <Table.Td>{"Per Month"}</Table.Td>
+                        </Table.Tr>
+                        <Table.Tr key={"Per Year"}>
+                          <Table.Td>{fromCurrency}</Table.Td>
+                          <Table.Td>{toYearTable}</Table.Td>
+                          <Table.Td>{"Per Year"}</Table.Td>
+                        </Table.Tr>
+                      </Table.Tbody>
+                    </Table>
+                  </Box>
+                </Collapse>
+              </Card.Section>
+            </Card>
+          </Grid.Col>
+        </Grid>
 
-      <Grid>
-        <Grid.Col span={{ base: 12 }}>
-          <Card withBorder shadow="sm" radius="md">
-            <Card.Section>
-              <Button fullWidth onClick={toggleAdvanceSettingOpen}>
-                Advance Setting
-              </Button>
-            </Card.Section>
-            <Card.Section>
-              <Collapse in={isAdvanceSettingOpen} transitionDuration={500} transitionTimingFunction="linear">
-                <Box p="md" style={{ overflow: "auto" }}>
-                  <SimpleGrid cols={{ base: 1, sm: 2 }}>
-                    <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-                      <TextInput type="number" value={calcHours} onChange={(e) => setCalcHours(Number(e.target.value))} placeholder="Hours" onFocus={(e) => e.target.select()} leftSection={"1 Day = "} leftSectionWidth={80} rightSection={"Hours"} rightSectionWidth={80} />
-                      <TextInput type="number" value={calcDay} onChange={(e) => setCalcDay(Number(e.target.value))} placeholder="Days" onFocus={(e) => e.target.select()} leftSection={"1 Week = "} leftSectionWidth={80} rightSection={"Days"} rightSectionWidth={80} />
+        <Grid>
+          <Grid.Col span={{ base: 12 }}>
+            <Card withBorder shadow="sm" radius="md">
+              <Card.Section>
+                <Button fullWidth onClick={toggleAdvanceSettingOpen}>
+                  Advance Setting
+                </Button>
+              </Card.Section>
+              <Card.Section>
+                <Collapse in={isAdvanceSettingOpen} transitionDuration={500} transitionTimingFunction="linear">
+                  <Box p="md" style={{ overflow: "auto" }}>
+                    <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                      <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
+                        <TextInput type="number" value={calcHours} onChange={(e) => setCalcHours(Number(e.target.value))} placeholder="Hours" onFocus={(e) => e.target.select()} leftSection={"1 Day = "} leftSectionWidth={80} rightSection={"Hours"} rightSectionWidth={80} />
+                        <TextInput type="number" value={calcDay} onChange={(e) => setCalcDay(Number(e.target.value))} placeholder="Days" onFocus={(e) => e.target.select()} leftSection={"1 Week = "} leftSectionWidth={80} rightSection={"Days"} rightSectionWidth={80} />
+                      </SimpleGrid>
+                      <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
+                        <TextInput type="number" value={calcWeek} onChange={(e) => setCalcWeek(Number(e.target.value))} placeholder="Weeks" onFocus={(e) => e.target.select()} leftSection={"1 Month = "} leftSectionWidth={80} rightSection={"Weeks"} rightSectionWidth={80} />
+                        <TextInput type="number" value={calcMonth} onChange={(e) => setCalcMonth(Number(e.target.value))} placeholder="Months" onFocus={(e) => e.target.select()} leftSection={"1 Year = "} leftSectionWidth={80} rightSection={"Months"} rightSectionWidth={80} />
+                      </SimpleGrid>
                     </SimpleGrid>
-                    <SimpleGrid cols={{ base: 1, sm: 1, md: 1 }}>
-                      <TextInput type="number" value={calcWeek} onChange={(e) => setCalcWeek(Number(e.target.value))} placeholder="Weeks" onFocus={(e) => e.target.select()} leftSection={"1 Month = "} leftSectionWidth={80} rightSection={"Weeks"} rightSectionWidth={80} />
-                      <TextInput type="number" value={calcMonth} onChange={(e) => setCalcMonth(Number(e.target.value))} placeholder="Months" onFocus={(e) => e.target.select()} leftSection={"1 Year = "} leftSectionWidth={80} rightSection={"Months"} rightSectionWidth={80} />
-                    </SimpleGrid>
-                  </SimpleGrid>
-                </Box>
-              </Collapse>
-            </Card.Section>
-          </Card>
-        </Grid.Col>
-      </Grid>
-    </Container>
+                  </Box>
+                </Collapse>
+              </Card.Section>
+            </Card>
+          </Grid.Col>
+        </Grid>
+      </Container>
+    </Layout>
   );
 };
 
