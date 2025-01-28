@@ -76,10 +76,6 @@ const HomePage = () => {
   const themeApp = useSelector((state: RootState) => state.theme.theme);
   let bgColor = themeApp === 'light' ? '#f0f4ff' : '#1a1b1e';
 
-  useEffect(() => {
-    console.log("themeApp", bgColor);
-  }, [themeApp]);
-
   return (
     <Container fluid style={{ padding: 0 }}>
       {/* Welcome Section */}
@@ -122,7 +118,7 @@ const HomePage = () => {
           >
             Your one-stop solution for various online tools to simplify your tasks.
           </Text>
-          <Group mt={40} position="center">
+          <Group mt={40} justify="center">
             <Button
               size="xl"
               variant="gradient"
@@ -333,7 +329,7 @@ const HomePage = () => {
                 >
                   <item.icon size={25} />
                 </ThemeIcon>
-                <Text size="lg" weight={600} mb="xs">{item.title}</Text>
+                <Text size="lg" fw={600} mb="xs">{item.title}</Text>
                 <Text size="md" color="dimmed">{item.description}</Text>
               </Card>
             ))}
@@ -420,9 +416,9 @@ const HomePage = () => {
                 >
                   "{testimonial.feedback}"
                 </Text>
-                <Group position="apart" mt="auto">
+                <Group justify="space-between" mt="auto">
                   <Text
-                    weight={600}
+                    fw={600}
                     size="sm"
                     style={{
                       background: 'linear-gradient(45deg, #228BE6 0%, #40C057 100%)',
@@ -483,7 +479,7 @@ const HomePage = () => {
           >
             Get access to exclusive features, early updates, and connect with other users. Best of all, it's completely free!
           </Text>
-          <Group position="center" spacing="xl">
+          <Group justify="center" gap="xl">
             <Link href="/signup" passHref style={{ textDecoration: 'none' }}>
               <Button
                 size="xl"
@@ -517,17 +513,17 @@ const HomePage = () => {
               </Button>
             </Link>
           </Group>
-          <Group mt={50} position="center" spacing={50}>
+          <Group mt={50} justify="center" gap={50}>
             <Box style={{ textAlign: 'center' }}>
-              <Text size="xl" weight={700} style={{ color: theme.colors.blue[5] }}>10K+</Text>
+              <Text size="xl" fw={700} style={{ color: theme.colors.blue[5] }}>10K+</Text>
               <Text size="sm" color="dimmed">Active Users</Text>
             </Box>
             <Box style={{ textAlign: 'center' }}>
-              <Text size="xl" weight={700} style={{ color: theme.colors.blue[5] }}>50+</Text>
+              <Text size="xl" fw={700} style={{ color: theme.colors.blue[5] }}>50+</Text>
               <Text size="sm" color="dimmed">Tools Available</Text>
             </Box>
             <Box style={{ textAlign: 'center' }}>
-              <Text size="xl" weight={700} style={{ color: theme.colors.blue[5] }}>24/7</Text>
+              <Text size="xl" fw={700} style={{ color: theme.colors.blue[5] }}>24/7</Text>
               <Text size="sm" color="dimmed">Support</Text>
             </Box>
           </Group>
@@ -578,7 +574,7 @@ const HomePage = () => {
           >
             Have questions, suggestions, or just want to say hello? We'd love to hear from you! Our support team is ready to assist you 24/7.
           </Text>
-          <Group position="center" spacing="xl">
+          <Group justify="center" gap="xl">
             <Link href="/contact" passHref style={{ textDecoration: 'none' }}>
               <Button
                 size="xl"
@@ -619,17 +615,17 @@ const HomePage = () => {
           >
             <Card p="lg" radius="md" withBorder>
               <IconMail size={30} style={{ marginBottom: '1rem', color: theme.colors.blue[5] }} />
-              <Text weight={500} mb="xs">Email Us</Text>
+              <Text fw={500} mb="xs">Email Us</Text>
               <Text size="sm" color="dimmed">support@freetool.dev</Text>
             </Card>
             <Card p="lg" radius="md" withBorder>
               <IconClock size={30} style={{ marginBottom: '1rem', color: theme.colors.blue[5] }} />
-              <Text weight={500} mb="xs">24/7 Support</Text>
+              <Text fw={500} mb="xs">24/7 Support</Text>
               <Text size="sm" color="dimmed">Always here to help</Text>
             </Card>
             <Card p="lg" radius="md" withBorder>
               <IconBrandTwitter size={30} style={{ marginBottom: '1rem', color: theme.colors.blue[5] }} />
-              <Text weight={500} mb="xs">Follow Us</Text>
+              <Text fw={500} mb="xs">Follow Us</Text>
               <Text size="sm" color="dimmed">@freetool</Text>
             </Card>
           </SimpleGrid>

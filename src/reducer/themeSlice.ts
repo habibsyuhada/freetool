@@ -5,16 +5,8 @@ interface ThemeState {
   theme: 'light' | 'dark';
 }
 
-// Inisialisasi state dengan memeriksa localStorage di sisi klien  
-const getInitialTheme = (): 'light' | 'dark' => {
-  if (typeof window !== 'undefined') {
-    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light';
-  }
-  return 'light'; // Default tema jika di server  
-};
-
 const initialState: ThemeState = {
-  theme: getInitialTheme(),
+  theme: 'light'
 };
 
 const themeSlice = createSlice({
@@ -23,12 +15,14 @@ const themeSlice = createSlice({
   reducers: {
     toggleTheme(state) {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('theme', state.theme); // Simpan tema ke localStorage  
-      }
+      console.log("toggleTheme", state.theme);
     },
+    setTheme(state, action) {
+      state.theme = action.payload;
+      console.log("setTheme", state.theme);
+    }
   },
 });
 
-export const { toggleTheme } = themeSlice.actions;
+export const { toggleTheme, setTheme } = themeSlice.actions;
 export default themeSlice.reducer;

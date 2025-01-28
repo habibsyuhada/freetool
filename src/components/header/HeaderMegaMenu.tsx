@@ -1,11 +1,12 @@
 import { IconBook, IconChartPie3, IconChevronDown, IconCode, IconCoin, IconFingerprint, IconNotification, IconSun, IconMoonStars } from "@tabler/icons-react";
-import { Anchor, Box, Burger, Button, Center, Collapse, Divider, Drawer, Group, HoverCard, ScrollArea, SimpleGrid, Text, ThemeIcon, UnstyledButton, useMantineTheme, Switch, createTheme, MantineProvider } from "@mantine/core";
+import { Anchor, Box, Burger, Button, Center, Collapse, Divider, Drawer, Group, HoverCard, ScrollArea, SimpleGrid, Text, ThemeIcon, UnstyledButton, useMantineTheme, Switch, createTheme, MantineProvider, useMantineColorScheme } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import classes from "./HeaderMegaMenu.module.css";
 import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
-import { toggleTheme } from '../../reducer/themeSlice';
+import { toggleTheme, setTheme } from '../../reducer/themeSlice';
+import { useState, useEffect } from 'react';
 
 const mockdata = [
   {
@@ -46,9 +47,21 @@ export function HeaderMegaMenu() {
   const theme = useMantineTheme();
   const dispatch: AppDispatch = useDispatch();
   const themeApp = useSelector((state: RootState) => state.theme.theme);
+  const { setColorScheme } = useMantineColorScheme();
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
+    if (savedTheme) {
+      dispatch(setTheme(savedTheme));
+      setColorScheme(savedTheme);
+    }
+  }, []);
 
   const handleToggleTheme = () => {
+    const newTheme = themeApp === 'light' ? 'dark' : 'light';
     dispatch(toggleTheme());
+    localStorage.setItem('theme', newTheme);
+    setColorScheme(newTheme);
   };
 
   const themeSwitch = createTheme({
