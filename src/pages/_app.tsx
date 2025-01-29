@@ -5,7 +5,7 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { HeaderMegaMenu } from '../components/header/HeaderMegaMenu';
 import { FooterSocial } from '../components/footer/FooterSocial';
-import { theme } from './theme';
+import { theme } from '../styles/theme';
 import { Provider } from "react-redux";
 import store from "../store/store";
 

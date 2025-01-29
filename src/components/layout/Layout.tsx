@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import { useEffect } from 'react'
+// import { useEffect } from 'react'
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,15 +20,15 @@ export default function Layout({
 }: LayoutProps) {
   const pageTitle = title ? `${title} | FreeTool` : 'FreeTool - Online Tools';
 
-  useEffect(() => {
-    if (window.dataLayer) {
-      window.dataLayer.push({
-        'page.keywords': keywords,
-        'page.title': title,
-        'page.description': description
-      });
-    }
-  }, [keywords, title, description]);
+  // useEffect(() => {
+  //   if (window.dataLayer) {
+  //     window.dataLayer.push({
+  //       'page.keywords': keywords,
+  //       'page.title': title,
+  //       'page.description': description
+  //     });
+  //   }
+  // }, [keywords, title, description]);
 
   return (
     <>

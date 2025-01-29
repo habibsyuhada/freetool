@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
 import { toggleTheme, setTheme } from '../../reducer/themeSlice';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 const mockdata = [
   {
@@ -61,7 +61,7 @@ export function HeaderMegaMenu() {
       dispatch(setTheme(savedTheme));
       setColorScheme(savedTheme);
     }
-  }, []);
+  }, [dispatch, setColorScheme]);
 
   const handleToggleTheme = () => {
     const newTheme = themeApp === 'light' ? 'dark' : 'light';
@@ -105,19 +105,19 @@ export function HeaderMegaMenu() {
           </Link>
 
           <Group h="100%" gap={0} visibleFrom="sm">
-            <a href="/" className={classes.link}>
+            <Link href="/" className={classes.link}>
               Home
-            </a>
-            <HoverCard width={{ base: "100%", lg: "80%" }} position="bottom" radius="md" shadow="md" withinPortal>
+            </Link>
+            <HoverCard width='95%' position="bottom" radius="md" shadow="md" withinPortal>
               <HoverCard.Target>
-                <a href="#" className={classes.link}>
+                <Link href="#" className={classes.link}>
                   <Center inline>
                     <Box component="span" mr={5}>
                       Tools
                     </Box>
                     <IconChevronDown size={16} color={theme.colors.blue[6]} />
                   </Center>
-                </a>
+                </Link>
               </HoverCard.Target>
 
               <HoverCard.Dropdown style={{ overflow: "hidden" }}>
@@ -141,7 +141,7 @@ export function HeaderMegaMenu() {
                         Join Us Today!
                       </Text>
                       <Text size="xs" c="dimmed">
-                        Sign in or create an account to access exclusive features and content. Best of all, it's completely free!
+                        Sign in or create an account to access exclusive features and content. Best of all, it&apos;s completely free!
                       </Text>
                     </div>
                     <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
@@ -151,12 +151,12 @@ export function HeaderMegaMenu() {
                 </div>
               </HoverCard.Dropdown>
             </HoverCard>
-            <a href="#" className={classes.link}>
+            <Link href="#" className={classes.link}>
               Blog
-            </a>
-            <a href="#" className={classes.link}>
+            </Link>
+            <Link href="#" className={classes.link}>
               Contact Us
-            </a>
+            </Link>
           </Group>
 
           <Group visibleFrom="sm">
@@ -186,9 +186,9 @@ export function HeaderMegaMenu() {
         <ScrollArea h="calc(100vh - 80px" mx="-md">
           <Divider my="sm" />
 
-          <a href="/" className={classes.link}>
+          <Link href="/" className={classes.link}>
             Home
-          </a>
+          </Link>
           <UnstyledButton className={classes.link} onClick={toggleLinks}>
             <Center inline>
               <Box component="span" mr={5}>
@@ -198,12 +198,12 @@ export function HeaderMegaMenu() {
             </Center>
           </UnstyledButton>
           <Collapse in={linksOpened}>{links}</Collapse>
-          <a href="#" className={classes.link}>
+          <Link href="#" className={classes.link}>
             Blog
-          </a>
-          <a href="#" className={classes.link}>
+          </Link>
+          <Link href="#" className={classes.link}>
             Contact Us
-          </a>
+          </Link>
 
           <Divider my="sm" />
 

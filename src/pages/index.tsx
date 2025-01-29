@@ -1,10 +1,9 @@
-import { Container, Title, Text, Button, SimpleGrid, Card, List, Group, Flex, Box, ThemeIcon, Rating } from "@mantine/core";
+import { Container, Title, Text, Button, SimpleGrid, Card, Group, Flex, Box, ThemeIcon, Rating } from "@mantine/core";
 import { IconCoin, IconCode, IconFingerprint, IconChartPie3, IconBook, IconTools, IconUser, IconHelp, IconCheck, IconRocket, IconRefresh, IconQuote, IconUserPlus, IconLogin, IconMessage, IconClock, IconBrandTwitter, IconMail } from "@tabler/icons-react";
 import Link from "next/link";
-import { theme } from "./theme";
+import { theme } from "../styles/theme";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 
 const tools = [
@@ -75,7 +74,7 @@ const testimonials = [
 
 const HomePage = () => {
   const themeApp = useSelector((state: RootState) => state.theme.theme);
-  let bgColor = themeApp === 'light' ? '#f0f4ff' : '#1a1b1e';
+  const bgColor = themeApp === 'light' ? '#f0f4ff' : '#1a1b1e';
 
   return (
     <Layout title="Home" description="Welcome to FreeTool">
@@ -386,7 +385,7 @@ const HomePage = () => {
               color="dimmed"
               style={{ lineHeight: 1.6 }}
             >
-              Don't just take our word for it. Here's what our community has to say about FreeTool:
+              Don&apos;t just take our word for it. Here&apos;s what our community has to say about FreeTool:
             </Text>
             <SimpleGrid
               cols={{ base: 1, sm: 2, md: 3 }}
@@ -420,7 +419,7 @@ const HomePage = () => {
                     style={{ lineHeight: 1.6, fontStyle: 'italic' }}
                     mb="xl"
                   >
-                    "{testimonial.feedback}"
+                    &quot;{testimonial.feedback}&quot;
                   </Text>
                   <Group justify="space-between" mt="auto">
                     <Text
@@ -483,7 +482,7 @@ const HomePage = () => {
               color="dimmed"
               style={{ lineHeight: 1.6 }}
             >
-              Get access to exclusive features, early updates, and connect with other users. Best of all, it's completely free!
+              Get access to exclusive features, early updates, and connect with other users. Best of all, it&apos;s completely free!
             </Text>
             <Group justify="center" gap="xl">
               <Link href="/coming-soon" passHref style={{ textDecoration: 'none' }}>
@@ -556,7 +555,7 @@ const HomePage = () => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Let's Connect
+              Let&apos;s Connect
             </Title>
             <Text
               size="xl"
@@ -566,7 +565,7 @@ const HomePage = () => {
               color="dimmed"
               style={{ lineHeight: 1.6 }}
             >
-              Have questions, suggestions, or just want to say hello? We'd love to hear from you! Our support team is ready to assist you 24/7.
+              Have questions, suggestions, or just want to say hello? We&apos;d love to hear from you! Our support team is ready to assist you 24/7.
             </Text>
             <Group justify="center" gap="xl">
               <Link href="/coming-soon" passHref style={{ textDecoration: 'none' }}>

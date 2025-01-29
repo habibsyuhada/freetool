@@ -1,14 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Box, Text, Flex } from "@mantine/core";
+import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Box } from "@mantine/core";
 import axios from "axios";
 import Layout from "@/components/layout/Layout";
 
+interface Currency {
+  code: string;
+  name: string;
+}
+
 const CurrencyConverter = () => {
-  const [currencies, setCurrencies] = useState([]);
-  const [rateConversion, setRateConversion] = useState([]);
-  const [amountFrom, setAmountFrom] = useState(0);
-  const [amountTo, setAmountTo] = useState(0);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+
+  const [rateConversion, setRateConversion] = useState<{ [key: string]: number }>({});
+  const [amountFrom, setAmountFrom] = useState("0");
+  const [amountTo, setAmountTo] = useState("0");
   const [fromCurrency, setFromCurrency] = useState("USD");
   const [toCurrency, setToCurrency] = useState("IDR");
   const [error, setError] = useState("");
@@ -18,27 +24,27 @@ const CurrencyConverter = () => {
   const [isCollapseFromOpen, { toggle: toggleCollapseFromOpen }] = useDisclosure(false);
   const [isCollapseToOpen, { toggle: toggleCollapseToOpen }] = useDisclosure(false);
   const [isAdvanceSettingOpen, { toggle: toggleAdvanceSettingOpen }] = useDisclosure(false);
-  const [fromHoursTable, setFromHoursTable] = useState(0);
-  const [fromMonthTable, setFromMonthTable] = useState(0);
-  const [fromYearTable, setFromYearTable] = useState(0);
-  const [toHoursTable, setToHoursTable] = useState(0);
-  const [toMonthTable, setToMonthTable] = useState(0);
-  const [toYearTable, setToYearTable] = useState(0);
+  const [fromHoursTable, setFromHoursTable] = useState("0");
+  const [fromMonthTable, setFromMonthTable] = useState("0");
+  const [fromYearTable, setFromYearTable] = useState("0");
+  const [toHoursTable, setToHoursTable] = useState("0");
+  const [toMonthTable, setToMonthTable] = useState("0");
+  const [toYearTable, setToYearTable] = useState("0");
   const [calcHours, setCalcHours] = useState(8);
   const [calcDay, setCalcDay] = useState(5);
   const [calcWeek, setCalcWeek] = useState(4);
   const [calcMonth, setCalcMonth] = useState(12);
 
-  const fetchMasterCurrency = async () => {
+  const fetchMasterCurrency = useCallback(async () => {
     try {
       const response = await axios.get("/api/master_currency");
       setCurrencies(response.data);
     } catch (err) {
-      setError("Failed to fetch currency data master");
+      setError("Failed to fetch currency data master: " + err);
     }
-  };
+  }, []);
 
-  const fetchRateConversion = async () => {
+  const fetchRateConversion = useCallback(async () => {
     try {
       const response = await axios.get(`/api/currency?base_code=${fromCurrency}`);
       const conversionData = response.data;
@@ -48,7 +54,7 @@ const CurrencyConverter = () => {
       let isInsert = true;
       if (!conversionData || !conversionData.conversion_rates) {
         isUpToDate = false;
-      } else if (conversionData.update_date != new Date().toISOString().split("T")[0]) {
+      } else if (conversionData.update_date !== new Date().toISOString().split("T")[0]) {
         isUpToDate = false;
         isInsert = false;
       }
@@ -80,12 +86,12 @@ const CurrencyConverter = () => {
       console.log(err);
       setError("Failed to fetch currency data rate");
     }
-  };
+  }, [fromCurrency]);
 
   useEffect(() => {
     fetchMasterCurrency();
     fetchRateConversion();
-  }, []);
+  }, [fetchMasterCurrency, fetchRateConversion]);
 
   const handleFromCurrencyChange = (value: string) => {
     setFromCurrency(value);
@@ -93,45 +99,46 @@ const CurrencyConverter = () => {
 
   useEffect(() => {
     fetchRateConversion();
-  }, [fromCurrency]);
+  }, [fromCurrency, fetchRateConversion]);
 
   const handleAmountFromChange = (value: string) => {
     let numericValue = value;
     numericValue = numericValue.replace(/,/g, "");
-    numericValue = parseFloat(numericValue);
-    if (isNaN(numericValue)) {
-      numericValue = 0;
+    let parseValue = parseFloat(numericValue);
+    if (isNaN(parseValue)) {
+      parseValue = 0;
     }
     setAmountFrom(value);
 
     const rate = rateConversion[toCurrency];
-    const conversion = numericValue * rate;
-    setAmountTo(formatNumber(parseFloat(conversion)));
+    const conversion = parseValue * rate;
+    setAmountTo(formatNumber(conversion));
     handleTableInformation(numericValue, "from");
   };
 
   const handleAmountToChange = (value: string) => {
     let numericValue = value;
     numericValue = numericValue.replace(/,/g, "");
-    numericValue = parseFloat(numericValue);
-    if (isNaN(numericValue)) {
-      numericValue = 0;
+    let parseValue = parseFloat(numericValue);
+    if (isNaN(parseValue)) {
+      parseValue = 0;
     }
     setAmountTo(value);
 
     const rate = rateConversion[toCurrency];
-    const conversion = numericValue / rate;
-    setAmountFrom(formatNumber(parseFloat(conversion)));
+    const conversion = parseValue / rate;
+    setAmountFrom(formatNumber(conversion));
     handleTableInformation(numericValue, "to");
   };
 
-  const handleTimeChange = (value) => {
-    console.log(value);
-    setTime(value);
-    handleTableInformation(value, "time");
+  const handleTimeChange = (value: string | null) => {
+    if (value) {
+      setTime(value);
+      handleTableInformation(value, "time");
+    }
   };
 
-  const handleTableInformation = (value, category) => {
+  const handleTableInformation = useCallback((value: string, category: string) => {
     const rate = rateConversion[toCurrency];
     let sourceValue = value;
     let sourceTime = time;
@@ -147,46 +154,48 @@ const CurrencyConverter = () => {
     }
 
     if (sourceTime == "Per Hours") {
-      sourceHours = sourceValue * rate;
+      sourceHours = parseFloat(sourceValue) * rate;
       if (sourceCategory == "to") {
-        sourceHours = sourceValue / rate;
+        sourceHours = parseFloat(sourceValue) / rate;
       }
       sourceMonth = sourceHours * calcHours * calcDay * calcWeek;
       sourceYear = sourceMonth * calcMonth;
     } else if (sourceTime == "Per Month") {
-      sourceMonth = sourceValue * rate;
+      sourceMonth = parseFloat(sourceValue) * rate;
       if (sourceCategory == "to") {
-        sourceMonth = sourceValue / rate;
+        sourceMonth = parseFloat(sourceValue) / rate;
       }
       sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
       sourceYear = sourceMonth * calcMonth;
     } else if (sourceTime == "Per Year") {
-      sourceYear = sourceValue * rate;
+      sourceYear = parseFloat(sourceValue) * rate;
       if (sourceCategory == "to") {
-        sourceYear = sourceValue / rate;
+        sourceYear = parseFloat(sourceValue) / rate;
       }
       sourceMonth = sourceYear / calcMonth;
       sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
     }
 
-    if (sourceCategory == "from") {
-      setFromHoursTable(formatNumber(sourceHours));
-      setFromMonthTable(formatNumber(sourceMonth));
-      setFromYearTable(formatNumber(sourceYear));
-      setToHoursTable(formatNumber(sourceHours / rate));
-      setToMonthTable(formatNumber(sourceMonth / rate));
-      setToYearTable(formatNumber(sourceYear / rate));
-    } else if (sourceCategory == "to") {
-      setToHoursTable(formatNumber(sourceHours));
-      setToMonthTable(formatNumber(sourceMonth));
-      setToYearTable(formatNumber(sourceYear));
-      setFromHoursTable(formatNumber(sourceHours * rate));
-      setFromMonthTable(formatNumber(sourceMonth * rate));
-      setFromYearTable(formatNumber(sourceYear * rate));
+    if (sourceHours !== undefined && sourceMonth !== undefined && sourceYear !== undefined) {
+      if (sourceCategory == "from") {
+        setFromHoursTable(formatNumber(sourceHours));
+        setFromMonthTable(formatNumber(sourceMonth));
+        setFromYearTable(formatNumber(sourceYear));
+        setToHoursTable(formatNumber(sourceHours / rate));
+        setToMonthTable(formatNumber(sourceMonth / rate));
+        setToYearTable(formatNumber(sourceYear / rate));
+      } else if (sourceCategory == "to") {
+        setToHoursTable(formatNumber(sourceHours));
+        setToMonthTable(formatNumber(sourceMonth));
+        setToYearTable(formatNumber(sourceYear));
+        setFromHoursTable(formatNumber(sourceHours * rate));
+        setFromMonthTable(formatNumber(sourceMonth * rate));
+        setFromYearTable(formatNumber(sourceYear * rate));
+      }
     }
-  };
+  }, [rateConversion, toCurrency, amountFrom, calcDay, calcHours, calcMonth, calcWeek, time]);
 
-  const formatNumber = (num) => {
+  const formatNumber = (num: number) => {
     const res = new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -196,19 +205,19 @@ const CurrencyConverter = () => {
 
   useEffect(() => {
     handleTableInformation(amountFrom, "from");
-  }, [calcHours, calcDay, calcWeek, calcMonth]);
+  }, [calcHours, calcDay, calcWeek, calcMonth, amountFrom, handleTableInformation]);
 
   return (
-    <Layout 
-      title="Currency & Salary Converter"
-      description="Convert currencies and calculate salaries with real-time exchange rates. Free online currency converter tool."
-      keywords="currency converter, salary calculator, exchange rates, money converter"
-    >
+    <Layout title="Currency & Salary Converter" description="Convert currencies and calculate salaries with real-time exchange rates. Free online currency converter tool." keywords="currency converter, salary calculator, exchange rates, money converter">
       <Container>
-        <Title order={2} align="center" mt="md" mb="md">
-          Currency & Salary
-          <br />
-          Converter
+        <Title order={2} mt="md" mb="md">
+          <div style={{ textAlign: "center" }}>
+            {" "}
+            {/* Centering text using a div */}
+            Currency & Salary
+            <br />
+            Converter
+          </div>
         </Title>
         {error && (
           <Alert title="Error!" color="red">
@@ -221,7 +230,11 @@ const CurrencyConverter = () => {
               value={fromCurrency}
               searchValue={searchValueFrom}
               onSearchChange={setSearchValueFrom}
-              onChange={handleFromCurrencyChange}
+              onChange={(value) => {
+                if (value) {
+                  handleFromCurrencyChange(value); // Set currency only if value is not null
+                }
+              }}
               onFocus={() => setSearchValueFrom("")}
               data={currencies.map((currency) => ({
                 value: currency.code,
@@ -237,7 +250,11 @@ const CurrencyConverter = () => {
               value={toCurrency}
               searchValue={searchValueTo}
               onSearchChange={setSearchValueTo}
-              onChange={setToCurrency}
+              onChange={(value) => {
+                if (value) {
+                  setToCurrency(value); // Set currency only if value is not null
+                }
+              }}
               onFocus={() => setSearchValueTo("")}
               data={currencies.map((currency) => ({
                 value: currency.code,
@@ -261,7 +278,7 @@ const CurrencyConverter = () => {
             <Card withBorder shadow="sm" radius="md">
               <Card.Section>
                 <Button fullWidth onClick={toggleCollapseFromOpen}>
-                  {fromCurrency} {formatNumber(String(amountFrom).replace(/,/g, ""))} {time} mean ...
+                  {fromCurrency} {formatNumber(parseFloat(String(amountFrom).replace(/,/g, "")))} {time} mean ...
                 </Button>
               </Card.Section>
               <Card.Section>
@@ -295,7 +312,7 @@ const CurrencyConverter = () => {
             <Card withBorder shadow="sm" radius="md">
               <Card.Section>
                 <Button fullWidth onClick={toggleCollapseToOpen}>
-                  {toCurrency} {formatNumber(String(amountTo).replace(/,/g, ""))} {time} mean ...
+                  {toCurrency} {formatNumber(parseFloat(String(amountTo).replace(/,/g, "")))} {time} mean ...
                 </Button>
               </Card.Section>
               <Card.Section>

@@ -1,4 +1,4 @@
-import { Container, Title, Text, Button, Group } from '@mantine/core';
+import { Container, Title, Text, Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
 import Link from 'next/link';
 import Layout from '@/components/layout/Layout';
@@ -34,7 +34,7 @@ export default function ComingSoon() {
         </Title>
         
         <Text size="xl" mb={30} c="dimmed" maw={600}>
-          We're working hard to bring you something amazing. 
+          We&apos;re working hard to bring you something amazing. 
           Stay tuned for updates!
         </Text>
 
