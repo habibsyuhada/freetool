@@ -12,11 +12,7 @@ interface LayoutProps {
   ogUrl?: string;
 }
 
-declare global {
-  interface Window {
-    dataLayer: any[];
-  }
-}
+// Window interface is already extended in gtm.ts
 
 export default function Layout({ 
   children, 
