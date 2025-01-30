@@ -1,6 +1,7 @@
-import { IconBook, IconChartPie3, IconChevronDown, IconCode, IconCoin, IconFingerprint, IconNotification, IconSun, IconMoonStars } from "@tabler/icons-react";
-import { Anchor, Box, Burger, Button, Center, Collapse, Divider, Drawer, Group, HoverCard, ScrollArea, SimpleGrid, Text, ThemeIcon, UnstyledButton, useMantineTheme, Switch, createTheme, MantineProvider, useMantineColorScheme } from "@mantine/core";
+import { IconBook, IconChartPie3, IconChevronDown, IconCode, IconCoin, IconFingerprint, IconNotification, IconSun, IconMoonStars, IconLogout, IconUser } from "@tabler/icons-react";
+import { Anchor, Box, Burger, Button, Center, Collapse, Divider, Drawer, Group, HoverCard, ScrollArea, SimpleGrid, Text, ThemeIcon, UnstyledButton, useMantineTheme, Switch, createTheme, MantineProvider, useMantineColorScheme, Menu, Avatar } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
+import { useSession, signOut } from "next-auth/react";
 import classes from "./HeaderMegaMenu.module.css";
 import Link from "next/link";
 import { useDispatch, useSelector } from 'react-redux';
@@ -54,6 +55,7 @@ export function HeaderMegaMenu() {
   const dispatch: AppDispatch = useDispatch();
   const themeApp = useSelector((state: RootState) => state.theme.theme);
   const { setColorScheme } = useMantineColorScheme();
+  const { data: session } = useSession();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme') as 'light' | 'dark';
@@ -144,7 +146,7 @@ export function HeaderMegaMenu() {
                         Sign in or create an account to access exclusive features and content. Best of all, it&apos;s completely free!
                       </Text>
                     </div>
-                    <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
+                    <Link href="/login" style={{ textDecoration: 'none' }}>
                       <Button variant="default">Log In / Sign</Button>
                     </Link>
                   </Group>
@@ -170,12 +172,60 @@ export function HeaderMegaMenu() {
                 onChange={handleToggleTheme}
               />
             </MantineProvider>
-            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
-              <Button variant="default">Log in</Button>
-            </Link>
-            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
-              <Button>Sign up</Button>
-            </Link>
+            
+            {session ? (
+              <Menu shadow="md" width={200}>
+                <Menu.Target>
+                  <UnstyledButton>
+                    <Group>
+                      <Avatar 
+                        src={session.user?.image} 
+                        alt={session.user?.name || ''} 
+                        radius="xl"
+                        size={34}
+                      >
+                        {session.user?.name?.[0]}
+                      </Avatar>
+                      <div style={{ flex: 1 }}>
+                        <Text size="sm" fw={500}>
+                          {session.user?.name}
+                        </Text>
+                        <Text c="dimmed" size="xs">
+                          {session.user?.email}
+                        </Text>
+                      </div>
+                    </Group>
+                  </UnstyledButton>
+                </Menu.Target>
+
+                <Menu.Dropdown>
+                  <Menu.Item
+                    leftSection={<IconUser size={14} />}
+                    component={Link}
+                    href="/profile"
+                  >
+                    Profile
+                  </Menu.Item>
+                  <Menu.Divider />
+                  <Menu.Item
+                    leftSection={<IconLogout size={14} />}
+                    onClick={() => signOut()}
+                    color="red"
+                  >
+                    Logout
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            ) : (
+              <Group>
+                <Link href="/login" style={{ textDecoration: 'none' }}>
+                  <Button variant="default">Log in</Button>
+                </Link>
+                <Link href="/register" style={{ textDecoration: 'none' }}>
+                  <Button>Sign up</Button>
+                </Link>
+              </Group>
+            )}
           </Group>
 
           <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="sm" />
@@ -214,12 +264,41 @@ export function HeaderMegaMenu() {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
-              <Button variant="default" fullWidth>Log in</Button>
-            </Link>
-            <Link href="/coming-soon" style={{ textDecoration: 'none' }}>
-              <Button fullWidth>Sign up</Button>
-            </Link>
+            {session ? (
+              <>
+                <Text size="sm" ta="center" mb="xs">
+                  Signed in as {session.user?.name}
+                </Text>
+                <Button 
+                  variant="light" 
+                  color="blue" 
+                  fullWidth 
+                  component={Link} 
+                  href="/profile"
+                  leftSection={<IconUser size={14} />}
+                >
+                  Profile
+                </Button>
+                <Button 
+                  variant="light" 
+                  color="red" 
+                  fullWidth 
+                  onClick={() => signOut()}
+                  leftSection={<IconLogout size={14} />}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" style={{ textDecoration: 'none' }}>
+                  <Button variant="default" fullWidth>Log in</Button>
+                </Link>
+                <Link href="/register" style={{ textDecoration: 'none' }}>
+                  <Button fullWidth>Sign up</Button>
+                </Link>
+              </>
+            )}
           </Group>
         </ScrollArea>
       </Drawer>

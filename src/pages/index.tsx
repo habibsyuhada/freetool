@@ -485,7 +485,7 @@ const HomePage = () => {
               Get access to exclusive features, early updates, and connect with other users. Best of all, it&apos;s completely free!
             </Text>
             <Group justify="center" gap="xl">
-              <Link href="/coming-soon" passHref style={{ textDecoration: 'none' }}>
+              <Link href="/register" passHref style={{ textDecoration: 'none' }}>
                 <Button
                   size="xl"
                   variant="gradient"
@@ -495,7 +495,7 @@ const HomePage = () => {
                   Sign Up Now
                 </Button>
               </Link>
-              <Link href="/coming-soon" passHref style={{ textDecoration: 'none' }}>
+              <Link href="/login" passHref style={{ textDecoration: 'none' }}>
                 <Button
                   size="xl"
                   variant="outline"

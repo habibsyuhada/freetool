@@ -2,3 +2,5 @@
 
 DATABASE_URL="postgresql://username:password@host:port/database_name"
 NEXT_PUBLIC_GTM_ID=GTM-XXXXXXXX
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
