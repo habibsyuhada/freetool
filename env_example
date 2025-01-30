@@ -4,3 +4,9 @@ DATABASE_URL="postgresql://username:password@host:port/database_name"
 NEXT_PUBLIC_GTM_ID=GTM-XXXXXXXX
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+#ini isinya bisa bikin sendiri
+NEXTAUTH_SECRET="your-secret-key-here" 
+
+#Digunakan oleh NextAuth untuk pengaturan redirect dan cookie. Pastikan untuk mengatur ini dengan benar sesuai dengan lingkungan pengembangan atau produksi Anda. 
+NEXTAUTH_URL="http://localhost:3000"
