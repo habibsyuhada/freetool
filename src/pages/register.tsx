@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { signIn } from 'next-auth/react';
-import { Paper, TextInput, PasswordInput, Button, Title, Text, Container, Group, Divider, Stack, rem, Checkbox } from '@mantine/core';
-import { IconBrandGoogle } from '@tabler/icons-react';
+// import { signIn } from 'next-auth/react';
+import { Paper, TextInput, PasswordInput, Button, Title, Text, Container, Stack, rem, Checkbox } from '@mantine/core';
+// import { IconBrandGoogle } from '@tabler/icons-react';
 import Layout from '@/components/layout/Layout';
 import { notifications } from '@mantine/notifications';
 
@@ -63,16 +63,12 @@ export default function Register() {
 
       // Redirect to login page
       router.push('/login');
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
       console.error('Registration error:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleGoogleSignup = () => {
-    signIn('google', { callbackUrl: '/' });
   };
 
   const handleChange = (field: string) => (value: string) => {
@@ -171,9 +167,9 @@ export default function Register() {
             </Stack>
           </form>
 
-          <Divider label="Or continue with" labelPosition="center" my="lg" />
+          {/* <Divider label="Or continue with" labelPosition="center" my="lg" /> */}
 
-          <Group mb="md" mt="md">
+          {/* <Group mb="md" mt="md">
             <Button
               fullWidth
               variant="default"
@@ -183,9 +179,9 @@ export default function Register() {
             >
               Google
             </Button>
-          </Group>
+          </Group> */}
 
-          <Text c="dimmed" size="xs" ta="center" mt="sm">
+          {/* <Text c="dimmed" size="xs" ta="center" mt="sm">
             By signing up, you agree to our{' '}
             <Link href="/terms" style={{ textDecoration: 'none', color: '#228be6' }}>
               Terms of Service
@@ -194,7 +190,7 @@ export default function Register() {
             <Link href="/privacy" style={{ textDecoration: 'none', color: '#228be6' }}>
               Privacy Policy
             </Link>
-          </Text>
+          </Text> */}
         </Paper>
       </Container>
     </Layout>

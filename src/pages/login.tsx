@@ -2,9 +2,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { signIn } from 'next-auth/react';
-import { Paper, TextInput, PasswordInput, Checkbox, Button, Title, Text, Container, Group, Divider, Stack, rem } from '@mantine/core';
+import { Paper, TextInput, PasswordInput, Checkbox, Button, Title, Text, Container, Group, Stack, rem } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconBrandGoogle } from '@tabler/icons-react';
+// import { IconBrandGoogle } from '@tabler/icons-react';
 import Layout from '@/components/layout/Layout';
 
 export default function Login() {
@@ -55,9 +55,9 @@ export default function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    signIn('google', { callbackUrl: '/' });
-  };
+  // const handleGoogleLogin = () => {
+  //   signIn('google', { callbackUrl: '/' });
+  // };
 
   const handleChange = (field: string) => (value: string) => {
     setFormData(prev => ({
@@ -126,7 +126,7 @@ export default function Login() {
             </Stack>
           </form>
 
-          <Divider label="Or continue with" labelPosition="center" my="lg" />
+          {/* <Divider label="Or continue with" labelPosition="center" my="lg" />
 
           <Group mb="md" mt="md">
             <Button
@@ -138,7 +138,7 @@ export default function Login() {
             >
               Google
             </Button>
-          </Group>
+          </Group> */}
         </Paper>
       </Container>
     </Layout>
