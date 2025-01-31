@@ -77,7 +77,11 @@ const HomePage = () => {
   const bgColor = themeApp === 'light' ? '#f0f4ff' : '#1a1b1e';
 
   return (
-    <Layout title="Home" description="Welcome to FreeTool">
+    <Layout 
+  title="Free Online Tools Collection" 
+  description="FreeTool offers a collection of free online tools including currency converter, task management, URL shortener, QR code generator, and more to help streamline your daily tasks."
+  keywords="free online tools, currency converter, task management, url shortener, qr code generator, image compressor, user feedback tool, web tools, online utilities"
+>
       <Container fluid style={{ padding: 0 }}>
         {/* Welcome Section */}
         <Flex

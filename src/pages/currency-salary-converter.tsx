@@ -208,7 +208,11 @@ const CurrencyConverter = () => {
   }, [calcHours, calcDay, calcWeek, calcMonth, amountFrom, handleTableInformation]);
 
   return (
-    <Layout title="Currency & Salary Converter" description="Convert currencies and calculate salaries with real-time exchange rates. Free online currency converter tool." keywords="currency converter, salary calculator, exchange rates, money converter">
+    <Layout
+      title="Currency & Salary Converter"
+      description="Convert currencies and calculate salaries across different countries with real-time exchange rates. Make informed financial decisions with our free currency converter tool."
+      keywords="currency converter, salary calculator, exchange rate converter, money converter, international salary, currency conversion tool"
+    >
       <Container>
         <Title order={2} mt="md" mb="md">
           <div style={{ textAlign: "center" }}>
