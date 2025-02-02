@@ -77,11 +77,11 @@ const HomePage = () => {
   const bgColor = themeApp === 'light' ? '#f0f4ff' : '#1a1b1e';
 
   return (
-    <Layout 
-  title="Free Online Tools Collection" 
-  description="FreeTool offers a collection of free online tools including currency converter, task management, URL shortener, QR code generator, and more to help streamline your daily tasks."
-  keywords="free online tools, currency converter, task management, url shortener, qr code generator, image compressor, user feedback tool, web tools, online utilities"
->
+    <Layout
+      title="Free Online Tools Collection"
+      description="FreeTool offers a collection of free online tools including currency converter, task management, URL shortener, QR code generator, and more to help streamline your daily tasks."
+      keywords="free online tools, currency converter, task management, url shortener, qr code generator, image compressor, user feedback tool, web tools, online utilities"
+    >
       <Container fluid style={{ padding: 0 }}>
         {/* Welcome Section */}
         <Flex
@@ -601,7 +601,7 @@ const HomePage = () => {
               <Card p="lg" radius="md" withBorder>
                 <IconMail size={30} style={{ marginBottom: '1rem', color: theme.colors.blue[5] }} />
                 <Text fw={500} mb="xs">Email Us</Text>
-                <Text size="sm" color="dimmed">support@freetool.dev</Text>
+                <Text size="sm" color="dimmed">support@freetool.click</Text>
               </Card>
               <Card p="lg" radius="md" withBorder>
                 <IconClock size={30} style={{ marginBottom: '1rem', color: theme.colors.blue[5] }} />

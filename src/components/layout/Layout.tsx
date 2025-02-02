@@ -14,13 +14,13 @@ interface LayoutProps {
 
 // Window interface is already extended in gtm.ts
 
-export default function Layout({ 
-  children, 
-  title, 
+export default function Layout({
+  children,
+  title,
   description,
   keywords,
-  ogImage = 'https://freetool.dev/og-image.jpg',
-  ogUrl = 'https://freetool.dev'
+  ogImage = 'https://freetool.click/og-image.jpg',
+  ogUrl = 'https://freetool.click'
 }: LayoutProps) {
   const router = useRouter()
   const pageTitle = title ? `${title} | FreeTool` : 'FreeTool - Online Tools';
@@ -58,12 +58,12 @@ export default function Layout({
     <>
       <Head>
         <title>{pageTitle}</title>
-        
+
         {/* Primary Meta Tags */}
         <meta name="title" content={pageTitle} />
         <meta name="description" content={pageDescription} />
         {keywords && <meta name="keywords" content={keywords} />}
-        
+
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={ogUrl} />
@@ -77,7 +77,7 @@ export default function Layout({
         <meta property="twitter:title" content={pageTitle} />
         <meta property="twitter:description" content={pageDescription} />
         <meta property="twitter:image" content={ogImage} />
-        
+
         {/* Additional Meta Tags */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="robots" content="index, follow" />
