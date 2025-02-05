@@ -19,8 +19,8 @@ export default function Layout({
   title,
   description,
   keywords,
-  ogImage = 'https://freetool.click/og-image.jpg',
-  ogUrl = 'https://freetool.click'
+  ogImage = 'https://www.freetool.click/og-image.jpg',
+  ogUrl = 'https://www.freetool.click'
 }: LayoutProps) {
   const router = useRouter()
   const pageTitle = title ? `${title} | FreeTool` : 'FreeTool - Online Tools';
