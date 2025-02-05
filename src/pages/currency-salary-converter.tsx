@@ -84,7 +84,7 @@ const CurrencyConverter = () => {
         setRateConversion(rates);
       }
     } catch (err) {
-      console.log("err", err);
+      console.error("err", err);
       // setError("Failed to fetch currency data rate");
     }
   }, [fromCurrency]);

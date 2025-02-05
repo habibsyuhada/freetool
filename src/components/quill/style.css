@@ -1,0 +1,10 @@
+/* styles.css */  
+.ql-toolbar, .ql-container {  
+  z-index: 10; /* Atur z-index yang lebih tinggi */  
+}
+.ql-snow .ql-picker.ql-expanded .ql-picker-options {  
+  z-index: 11!important; /* Atur z-index yang lebih tinggi */  
+}
+.ql-editor {  
+  min-height: 300px; /* Atur tinggi minimum sesuai kebutuhan */  
+}

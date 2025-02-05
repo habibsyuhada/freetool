@@ -7,41 +7,68 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String?
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Habit {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  userId      String
+  User        User          @relation(fields: [userId], references: [id])
+  HabitRecord HabitRecord[]
+}
+
+model HabitRecord {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique
+  completed Boolean  @default(false)
+  habitId   Int
+  Habit     Habit    @relation(fields: [habitId], references: [id])
+}
+
 model User {
-  id            String    @id @default(cuid())
+  id            String    @id
   name          String?
   email         String    @unique
-  password      String?   // For email registration
+  password      String?
   emailVerified DateTime?
   image         String?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId           String
-  type             String  // "oauth" for Google, "credentials" for email
-  provider         String
-  providerAccountId String?
-  refresh_token    String? @db.Text
-  access_token     String? @db.Text
-  expires_at       Int?
-  token_type       String?
-  scope            String?
-  id_token         String? @db.Text
-  session_state    String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
+  updatedAt     DateTime
+  Account       Account[]
+  Habit         Habit[]
 }
 
 model currency {
   base_code        String    @id @db.VarChar
   conversion_rates String?
   update_date      DateTime? @db.Timestamp(6)
+}
+
+model documentinteractive {
+  id            Int     @id @default(autoincrement())
+  name          String?
+  desc          String?
+  userId        String?
+  document_html String?
 }
 
 model master_currency {
