@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Box } from "@mantine/core";
+import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Text, Box } from "@mantine/core";
 import axios from "axios";
 import Layout from "@/components/layout/Layout";
 
@@ -48,8 +48,9 @@ const CurrencyConverter = () => {
     try {
       const response = await axios.get(`/api/currency?base_code=${fromCurrency}`);
       const conversionData = response.data;
-      conversionData.update_date = conversionData.update_date.split("T")[0];
-
+      if (conversionData.update_date) {
+        conversionData.update_date = conversionData.update_date.split("T")[0];
+      }
       let isUpToDate = true;
       let isInsert = true;
       if (!conversionData || !conversionData.conversion_rates) {
@@ -83,8 +84,8 @@ const CurrencyConverter = () => {
         setRateConversion(rates);
       }
     } catch (err) {
-      console.log(err);
-      setError("Failed to fetch currency data rate");
+      console.log("err", err);
+      // setError("Failed to fetch currency data rate");
     }
   }, [fromCurrency]);
 
@@ -375,6 +376,73 @@ const CurrencyConverter = () => {
             </Card>
           </Grid.Col>
         </Grid>
+        <Box mt="xl">
+          <Title order={3}>Why Use a Currency Converter?</Title>
+          <Text>
+            Currency converters are essential tools for anyone dealing with international transactions, travel, or investments. They help you understand the value of your money in different currencies, ensuring you make informed financial decisions.
+          </Text>
+          <Text mt="md">
+            Whether you&apos;re planning a trip abroad, purchasing goods from another country, or managing investments in foreign markets, knowing the current exchange rates can save you money and help you avoid unfavorable conversions.
+          </Text>
+
+          <Title order={3} mt="xl">Tips for Using the Currency Converter</Title>
+          <Text>
+            1. **Check for Real-Time Rates**: Always ensure that you are using a converter that provides real-time exchange rates to get the most accurate conversions.
+          </Text>
+          <Text>
+            2. **Understand Fees**: Be aware that banks and currency exchange services may charge fees or offer different rates than those shown in online converters.
+          </Text>
+          <Text>
+            3. **Stay Updated**: Currency values fluctuate frequently due to market conditions. Regularly check rates if you are planning a transaction.
+          </Text>
+
+          <Title order={3} mt="xl">Common Currency Pairs</Title>
+          <Text>
+            Some of the most commonly traded currency pairs include:
+          </Text>
+          <Text>
+            - **EUR/USD**: Euro to US Dollar
+          </Text>
+          <Text>
+            - **USD/JPY**: US Dollar to Japanese Yen
+          </Text>
+          <Text>
+            - **GBP/USD**: British Pound to US Dollar
+          </Text>
+          <Text>
+            - **AUD/USD**: Australian Dollar to US Dollar
+          </Text>
+          <Text>
+            - **USD/CAD**: US Dollar to Canadian Dollar
+          </Text>
+
+          <Title order={3} mt="xl">The Impact of Exchange Rates</Title>
+          <Text>
+            Exchange rates can significantly impact international trade, investments, and travel. A strong currency can make imports cheaper, while a weak currency can boost exports. Understanding these dynamics can help you make better financial decisions.
+          </Text>
+
+          <Title order={3} mt="xl">Frequently Asked Questions (FAQ)</Title>
+          <Text>
+            <strong>1. How often do exchange rates change?</strong>
+            <br />
+            Exchange rates can change multiple times a day due to market fluctuations, economic indicators, and geopolitical events.
+          </Text>
+          <Text>
+            <strong>2. What factors influence exchange rates?</strong>
+            <br />
+            Factors include interest rates, inflation, political stability, and economic performance of countries.
+          </Text>
+          <Text>
+            <strong>3. Can I lock in an exchange rate?</strong>
+            <br />
+            Some financial institutions offer options to lock in exchange rates for future transactions, which can be beneficial in volatile markets.
+          </Text>
+
+          <Title order={3} mt="xl">Explore More Financial Tools</Title>
+          <Text>
+            In addition to currency conversion, consider exploring other financial tools such as budget calculators, investment trackers, and savings planners to enhance your financial literacy and planning.
+          </Text>
+        </Box>
       </Container>
     </Layout>
   );
