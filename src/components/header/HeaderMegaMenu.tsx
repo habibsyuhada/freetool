@@ -1,4 +1,4 @@
-import { IconBook, IconChartPie3, IconChevronDown, IconCode, IconCoin, IconFingerprint, IconNotification, IconSun, IconMoonStars, IconLogout, IconUser } from "@tabler/icons-react";
+import { IconChevronDown, IconSun, IconMoonStars, IconLogout, IconUser } from "@tabler/icons-react";
 import { Anchor, Box, Burger, Button, Center, Collapse, Divider, Drawer, Group, HoverCard, ScrollArea, SimpleGrid, Text, ThemeIcon, UnstyledButton, useMantineTheme, Switch, createTheme, MantineProvider, useMantineColorScheme, Menu, Avatar } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { useSession, signOut } from "next-auth/react";
@@ -8,45 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../../store/store';
 import { toggleTheme, setTheme } from '../../reducer/themeSlice';
 import { useEffect } from 'react';
-
-const mockdata = [
-  {
-    icon: IconCode,
-    title: "Currency & Salary Converter",
-    description: "Convert currencies and calculate salaries with real-time exchange rates",
-    link: "/currency-salary-converter"
-  },
-  {
-    icon: IconCoin,
-    title: "Task Management",
-    description: "Organize, track, and manage your tasks efficiently with our intuitive tool",
-    link: "/coming-soon"
-  },
-  {
-    icon: IconBook,
-    title: "Cut Url",
-    description: "Shorten your long URLs into clean, manageable links instantly",
-    link: "/coming-soon"
-  },
-  {
-    icon: IconFingerprint,
-    title: "Encoder & Decoder",
-    description: "Encode and decode text with various encryption methods securely",
-    link: "/coming-soon"
-  },
-  {
-    icon: IconChartPie3,
-    title: "QR Generator",
-    description: "Create custom QR codes for your links, text, or contact information",
-    link: "/coming-soon"
-  },
-  {
-    icon: IconNotification,
-    title: "Image Compressor",
-    description: "Compress and optimize your images without losing quality",
-    link: "/coming-soon"
-  },
-];
+import { featureData } from '../../data/featureData';
 
 export function HeaderMegaMenu() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
@@ -76,7 +38,7 @@ export function HeaderMegaMenu() {
     cursorType: "pointer",
   });
 
-  const links = mockdata.map((item) => (
+  const links = featureData.map((item) => (
     <Link href={item.link} key={item.title} style={{ textDecoration: 'none' }}>
       <UnstyledButton className={classes.subLink}>
         <Group wrap="nowrap" align="flex-start">

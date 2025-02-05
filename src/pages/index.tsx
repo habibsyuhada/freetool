@@ -1,61 +1,11 @@
 import { Container, Title, Text, Button, SimpleGrid, Card, Group, Flex, Box, ThemeIcon, Rating } from "@mantine/core";
-import { IconCoin, IconCode, IconFingerprint, IconChartPie3, IconBook, IconTools, IconUser, IconHelp, IconCheck, IconRocket, IconRefresh, IconQuote, IconUserPlus, IconLogin, IconMessage, IconClock, IconBrandTwitter, IconMail } from "@tabler/icons-react";
+import { IconCoin, IconHelp, IconCheck, IconRocket, IconRefresh, IconQuote, IconUserPlus, IconLogin, IconMessage, IconClock, IconBrandTwitter, IconMail } from "@tabler/icons-react";
 import Link from "next/link";
 import { theme } from "../styles/theme";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import Layout from "@/components/layout/Layout";
-
-const tools = [
-  {
-    icon: IconCoin,
-    title: "Currency & Salary Converter",
-    description: "Convert currencies and salaries with ease. Get real-time exchange rates and make informed financial decisions.",
-    link: "/currency-salary-converter",
-  },
-  {
-    icon: IconCode,
-    title: "Task Management",
-    description: "Manage your tasks efficiently with our intuitive task management tool. Organize, prioritize, and track your progress.",
-    link: "/coming-soon",
-  },
-  {
-    icon: IconBook,
-    title: "Cut URL",
-    description: "Shorten your URLs quickly and easily. Share links without clutter and track their performance.",
-    link: "/coming-soon",
-  },
-  {
-    icon: IconFingerprint,
-    title: "Encoder & Decoder",
-    description: "Encode and decode text securely. Protect sensitive information with our easy-to-use tool.",
-    link: "/coming-soon",
-  },
-  {
-    icon: IconChartPie3,
-    title: "QR Code Generator",
-    description: "Generate QR codes for any link. Perfect for marketing materials, business cards, and more.",
-    link: "/coming-soon",
-  },
-  {
-    icon: IconTools,
-    title: "Image Compressor",
-    description: "Reduce image file sizes without losing quality. Optimize your images for faster loading times.",
-    link: "/coming-soon",
-  },
-  {
-    icon: IconUser,
-    title: "User Feedback Tool",
-    description: "Collect user feedback effortlessly. Improve your services based on real user insights.",
-    link: "/coming-soon",
-  },
-  {
-    icon: IconHelp,
-    title: "Help & Support",
-    description: "Need assistance? Our help center provides answers to common questions and support resources.",
-    link: "/coming-soon",
-  },
-];
+import { featureData } from '../data/featureData';
 
 const testimonials = [
   {
@@ -197,7 +147,7 @@ const HomePage = () => {
               spacing="xl"
               verticalSpacing="xl"
             >
-              {tools.map((tool) => (
+              {featureData.map((tool) => (
                 <Card
                   key={tool.title}
                   shadow="sm"

@@ -7,11 +7,9 @@ const prisma = new PrismaClient();
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {  
   if (req.method === 'GET') {  
     const id = typeof req.query.id === 'string' ? req.query.id : Array.isArray(req.query.id) ? req.query.id[0] : String(req.query.id);  
-    console.log('ID from query:', id); // Log untuk memeriksa nilai ID  
 
     if (id !== 'undefined' && id) {  
       try {  
-        console.log('Fetching document by ID', id);  
         const document = await prisma.documentinteractive.findUnique({  
           where: { id: Number(decrypt(id)) },  
         });  
@@ -31,7 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         res.status(500).json({ error: 'Failed to decrypt ID' });  
       }  
     } else {  
-      console.log('Fetching all documents');  
       const documents = await prisma.documentinteractive.findMany();  
       res.status(200).json(  
         documents.map((document: any) => ({  
@@ -60,7 +57,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!id) {  
       return res.status(400).json({ error: 'ID is required for update' }); // Validasi ID untuk PUT  
     }  
-    console.log('Updating document by ID', id);
     try {  
       const updatedDocument = await prisma.documentinteractive.update({  
         where: { id: Number(decrypt(id)) },  
@@ -83,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }  
 
     await prisma.documentinteractive.delete({  
-      where: { id },  
+      where: { id: Number(decrypt(id)) },  
     });  
     res.status(204).end();  
   } else {  

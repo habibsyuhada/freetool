@@ -30,7 +30,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   } else if (req.method === 'POST') {
     const { base_code, conversion_rates, update_date }: Currency = req.body;
-    console.log(req.body);
 
     const newConversion = await prisma.currency.create({
       data: {
