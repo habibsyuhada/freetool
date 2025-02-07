@@ -1,21 +1,11 @@
 import { NextApiHandler } from 'next';
-import NextAuth, { DefaultSession } from 'next-auth';
+import NextAuth from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
-
-declare module 'next-auth' {
-  interface Session extends DefaultSession {
-    user?: {
-      id: string;
-    } & DefaultSession['user']
-  }
-  interface JWT {
-    id?: string;
-  }
-}
+import { sign } from 'jsonwebtoken';
 
 const authHandler: NextApiHandler = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -51,11 +41,22 @@ const authHandler: NextApiHandler = NextAuth({
           throw new Error('Invalid password');
         }
 
+        const userData = {  
+          id: user.id,  
+          email: user.email,  
+          name: user.name,  
+          image: user.image,  
+        };
+
+        const jwtSecret = process.env.NEXT_PUBLIC_JWT_SECRET;  
+        if (!jwtSecret) {  
+          throw new Error("JWT_SECRET is not defined in the environment variables");  
+        }  
+        const token = sign(userData, jwtSecret, { expiresIn: '1h' });  
+
         return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
+          ...userData,
+          token,
         };
       },
     }),
@@ -68,20 +69,26 @@ const authHandler: NextApiHandler = NextAuth({
   session: {
     strategy: 'jwt',
   },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session?.user) {
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
+  callbacks: {  
+    async jwt({ token, user }) {  
+      if (user) {  
+        token.id = user.id;  
+        token.email = user.email; // Simpan email jika perlu  
+        token.name = user.name; // Simpan nama jika perlu  
+        token.image = user.image; // Simpan gambar jika perlu  
+        token.token = user.token; // Simpan token JWT  
+      }  
+      return token;  
+    },  
+    async session({ session, token }) {  
+      if (session?.user) {  
+        session.user.id = token.id as string;  
+        session.user.token = token.token as string; // Pastikan token diakses dengan benar  
+      }  
+      return session;  
+    },  
+  }  
+  
 });
 
 export default authHandler;
