@@ -92,15 +92,20 @@ const CurrencyConverter = () => {
   useEffect(() => {
     fetchMasterCurrency();
     fetchRateConversion();
-  }, [fetchMasterCurrency, fetchRateConversion]);
+  }, []);
 
   const handleFromCurrencyChange = (value: string) => {
     setFromCurrency(value);
   };
 
   useEffect(() => {
+    console.log("fromCurrency", fromCurrency);
+    handleAmountFromChange(amountFrom);
+  }, [fromCurrency, toCurrency]);
+
+  useEffect(() => {
     fetchRateConversion();
-  }, [fromCurrency, fetchRateConversion]);
+  }, [fromCurrency]);
 
   const handleAmountFromChange = (value: string) => {
     let numericValue = value;
@@ -376,6 +381,7 @@ const CurrencyConverter = () => {
             </Card>
           </Grid.Col>
         </Grid>
+        
         <Box mt="xl">
           <Title order={3}>Why Use a Currency Converter?</Title>
           <Text>
