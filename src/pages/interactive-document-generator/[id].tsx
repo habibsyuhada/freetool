@@ -2,51 +2,13 @@ import { useEffect, useState } from 'react';
 import { Container, Title, Text, Loader, Alert, Button } from '@mantine/core';  
 import { useRouter } from 'next/router';  
 import axios from 'axios';  
-import { PDFDownloadLink, Document, Page, View, StyleSheet } from '@react-pdf/renderer';  
-import { Parser } from 'html-to-react';  
-
-// Gaya untuk PDF  
-const styles = StyleSheet.create({  
-  page: {  
-    flexDirection: 'column',  
-    padding: 30,  
-  },  
-  section: {  
-    margin: 10,  
-    padding: 10,  
-    flexGrow: 1,  
-  },  
-  textCenter: {  
-    textAlign: 'center',  
-  },  
-  textJustify: {  
-    textAlign: 'justify',  
-  },  
-});  
-
-// Komponen untuk mengonversi HTML menjadi komponen React  
-const HtmlToPdf = ({ html }) => {  
-  const htmlToReactParser = new Parser();  
-  return htmlToReactParser.parse(html);  
-};  
-
-// Komponen PDF  
-const MyDocument = ({ htmlContent }) => (  
-  <Document>  
-    <Page size="A4" style={styles.page}>  
-      <View style={styles.section}>  
-        <HtmlToPdf html={htmlContent} />  
-      </View>  
-    </Page>  
-  </Document>  
-);  
 
 const DocumentView = () => {  
   const router = useRouter();  
   const { id } = router.query; // Ambil ID dari URL  
-  const [documentData, setDocumentData] = useState<any>(null);  
+  const [documentData, setDocumentData] = useState(null);  
   const [loading, setLoading] = useState(true);  
-  const [error, setError] = useState<string | null>(null);  
+  const [error, setError] = useState(null);  
 
   useEffect(() => {  
     const fetchDocument = async () => {  
@@ -57,7 +19,8 @@ const DocumentView = () => {
           console.log("Fetched document data:", response.data); // Debugging  
         } catch (error) {  
           console.error("Error fetching document:", error);  
-          setError("Failed to fetch document.");  
+          setError(null); // Reset to null to match type
+          setError("Failed to fetch document" as any); // Type assertion to allow string
         } finally {  
           setLoading(false);  
         }  
@@ -66,9 +29,9 @@ const DocumentView = () => {
 
     fetchDocument();  
   }, [id]);  
-
   const copyToClipboard = () => {  
-    const textToCopy = documentData.document_html.replace(/<[^>]+>/g, ''); // Menghapus tag HTML  
+    if (!documentData) return;
+    const textToCopy = (documentData as any).document_html.replace(/<[^>]+>/g, ''); // Menghapus tag HTML  
     navigator.clipboard.writeText(textToCopy)  
       .then(() => {  
         alert("Text copied to clipboard!");  
@@ -76,6 +39,25 @@ const DocumentView = () => {
       .catch((err) => {  
         console.error("Failed to copy text: ", err);  
       });  
+  };  
+
+  const handleDownloadPdf = async () => {  
+    if (documentData) {  
+      const htmlData = encodeURIComponent((documentData as any).document_html);  
+      const response = await axios.post('/api/generate-pdf', { htmlData }, { responseType: 'blob' });  
+  
+      // Log untuk memeriksa status respons dan ukuran data  
+      console.log(`Response Status: ${response.status}`);  
+      console.log(`Response Data Size: ${response.data.size} bytes`);  
+  
+      const url = window.URL.createObjectURL(new Blob([response.data]));  
+      const link = document.createElement('a');  
+      link.href = url;  
+      link.setAttribute('download', `${(documentData as any).name}.pdf`);  
+      document.body.appendChild(link);  
+      link.click();  
+      link.remove();  
+    }  
   };  
 
   if (loading) {  
@@ -96,14 +78,10 @@ const DocumentView = () => {
 
   return (  
     <Container mt={30}>  
-      <Title order={2}>{documentData.name}</Title>  
-      <Text>{documentData.desc}</Text>  
-      <div id="document-content" dangerouslySetInnerHTML={{ __html: documentData.document_html }} /> {/* Tampilkan konten HTML */}  
-      <PDFDownloadLink document={<MyDocument htmlContent={documentData.document_html} />} fileName={`${documentData.name}.pdf`}>  
-        {({ blob, url, loading, error }) =>  
-          loading ? 'Loading document...' : 'Download PDF'  
-        }  
-      </PDFDownloadLink>  
+      <Title order={2}>{(documentData as any)?.name}</Title>  
+      <Text>{(documentData as any)?.desc}</Text>  
+      <div id="document-content" dangerouslySetInnerHTML={{ __html: (documentData as any)?.document_html ?? '' }} /> {/* Tampilkan konten HTML */}  
+      <Button mt="md" onClick={handleDownloadPdf} color="green">Download PDF</Button>  
       <Button mt="md" onClick={copyToClipboard} color="blue">Copy Text</Button>  
     </Container>  
   );  

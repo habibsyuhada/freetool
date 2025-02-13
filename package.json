@@ -30,6 +30,7 @@
     "mantine-datatable": "^7.15.1",
     "next": "15.1.5",
     "next-auth": "^4.24.11",
+    "puppeteer": "^24.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-quill-new": "^3.3.3",
