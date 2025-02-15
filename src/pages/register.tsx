@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 // import { signIn } from 'next-auth/react';
 import { Paper, TextInput, PasswordInput, Button, Title, Text, Container, Stack, rem, Checkbox } from '@mantine/core';
 // import { IconBrandGoogle } from '@tabler/icons-react';
@@ -9,6 +10,18 @@ import { notifications } from '@mantine/notifications';
 
 export default function Register() {
   const router = useRouter();
+  const { status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/");
+    }
+  }, [status, router]);
+
+  if (status === "loading" || status === "authenticated") {
+    return null;
+  }
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
