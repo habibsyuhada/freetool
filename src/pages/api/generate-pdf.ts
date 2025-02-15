@@ -21,7 +21,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Gabungkan default margins dengan margins yang diterima
     const finalMargins = { ...defaultMargins, ...margins };
-		console.log(finalMargins);
 
     // Decode HTML data  
     const decodedHtml = decodeURIComponent(htmlData);  
@@ -34,7 +33,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             font-family: 'Helvetica', 'Arial', sans-serif;
             padding: 0;
             margin: 0;
-          }  
+          }
+          
+          /* Quill editor alignment styles */
+          .ql-align-center {
+            text-align: center;
+          }
+          .ql-align-right {
+            text-align: right;
+          }
+          .ql-align-justify {
+            text-align: justify;
+          }
+          
+          /* Quill editor list styles */
+          .ql-editor ul {
+            padding-left: 1.5em;
+            list-style-type: disc;
+          }
+          .ql-editor ol {
+            padding-left: 1.5em;
+            list-style-type: decimal;
+          }
+          
+          /* Quill editor text styles */
+          .ql-editor strong {
+            font-weight: bold;
+          }
+          .ql-editor em {
+            font-style: italic;
+          }
+          .ql-editor u {
+            text-decoration: underline;
+          }
+          
+          /* Quill editor heading styles */
+          .ql-editor h1 {
+            font-size: 2em;
+            margin-top: 0.67em;
+            margin-bottom: 0.67em;
+          }
+          .ql-editor h2 {
+            font-size: 1.5em;
+            margin-top: 0.83em;
+            margin-bottom: 0.83em;
+          }
         </style>  
       </head>  
       <body>  

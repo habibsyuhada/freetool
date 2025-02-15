@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import axios from 'axios';
 import Layout from "@/components/layout/Layout";
 import VariableEditor from '@/components/quill/VariableEditor';
+import Link from 'next/link';
 
 type DocumentData = {
 	id: string;
@@ -27,7 +28,7 @@ const DocumentView = () => {
 	const replaceVariablesWithValues = (text: string, variables: Array<{ name: string; value: string }>, values: Record<string, string>) => {
 		let result = text;
 		variables.forEach(variable => {
-			const regex = `{{${variable.name}}}`;
+			const regex = new RegExp(`{{${variable.name}}}`, 'g');
 			const currentValue = values[variable.name] || variable.value;
 			result = result.replace(regex, currentValue);
 		});
@@ -40,7 +41,7 @@ const DocumentView = () => {
 				try {
 					const response = await axios.get(`/api/documentInteractive?id=${id}`);
 					setDocumentData(response.data);
-					
+
 					// Initialize variable values
 					if (response.data.variables) {
 						const initialValues: Record<string, string> = {};
@@ -98,21 +99,21 @@ const DocumentView = () => {
 
 			// Remove HTML tags and copy
 			const cleanText = textWithVariables.replace(/<[^>]+>/g, '').trim();
-			
+
 			// Create temporary textarea
 			const textarea = document.createElement('textarea');
 			textarea.value = cleanText;
 			textarea.style.position = 'fixed';
 			textarea.style.opacity = '0';
 			document.body.appendChild(textarea);
-			
+
 			// Select and copy
 			textarea.select();
 			document.execCommand('copy');
-			
+
 			// Cleanup
 			document.body.removeChild(textarea);
-			
+
 			alert("Text copied to clipboard!");
 		} catch (err) {
 			console.error("Failed to copy text:", err);
@@ -123,7 +124,7 @@ const DocumentView = () => {
 	const handleDownloadPdf = async () => {
 		if (documentData) {
 			const htmlData = encodeURIComponent(currentHtml);
-			
+
 			// Menggunakan documentData.variables untuk mendapatkan nama margin dan variableValues untuk nilai terbaru
 			const margins = documentData.variables?.reduce((acc, v) => {
 				if (v.name.startsWith('margin_')) {
@@ -133,15 +134,13 @@ const DocumentView = () => {
 				return acc;
 			}, {} as Record<string, string>);
 
-			console.log("margins", margins);
-			
-			const response = await axios.post('/api/generate-pdf', 
-				{ 
-					htmlData, 
-					margins 
-				}, 
-				{ 
-					responseType: 'blob' 
+			const response = await axios.post('/api/generate-pdf',
+				{
+					htmlData,
+					margins
+				},
+				{
+					responseType: 'blob'
 				}
 			);
 
@@ -180,17 +179,72 @@ const DocumentView = () => {
 			<Container mt={30}>
 				<Title order={2}>{documentData?.name}</Title>
 				<Text>{documentData?.desc}</Text>
-				
+
 				{documentData?.variables && documentData.variables.length > 0 && (
 					<Button mt="md" onClick={() => setShowVariableEditor(true)} color="blue">
 						Edit Variables
 					</Button>
 				)}
-				
-				<div id="document-content" dangerouslySetInnerHTML={{ __html: currentHtml }} />
-				
+
+				<style>
+					{`
+						.ql-editor {
+							font-family: 'Helvetica', 'Arial', sans-serif;
+						}
+						
+						/* Quill editor alignment styles */
+						.ql-align-center {
+							text-align: center;
+						}
+						.ql-align-right {
+							text-align: right;
+						}
+						.ql-align-justify {
+							text-align: justify;
+						}
+						
+						/* Quill editor list styles */
+						.ql-editor ul {
+							padding-left: 1.5em;
+							list-style-type: disc;
+						}
+						.ql-editor ol {
+							padding-left: 1.5em;
+							list-style-type: decimal;
+						}
+						
+						/* Quill editor text styles */
+						.ql-editor strong {
+							font-weight: bold;
+						}
+						.ql-editor em {
+							font-style: italic;
+						}
+						.ql-editor u {
+							text-decoration: underline;
+						}
+						
+						/* Quill editor heading styles */
+						.ql-editor h1 {
+							font-size: 2em;
+							margin-top: 0.67em;
+							margin-bottom: 0.67em;
+						}
+						.ql-editor h2 {
+							font-size: 1.5em;
+							margin-top: 0.83em;
+							margin-bottom: 0.83em;
+						}
+					`}
+				</style>
+
+				<div id="document-content" className="ql-editor" dangerouslySetInnerHTML={{ __html: currentHtml }} />
+
 				<Button mt="md" onClick={handleDownloadPdf} color="green">Download PDF</Button>
 				<Button mt="md" onClick={copyToClipboard} color="blue" ml="xs">Copy Text</Button>
+				<Link href="/interactive-document-generator">
+					<Button mt="md" style={{ marginTop: '20px' }} mx={"xs"} color="gray">{documentData ? 'Back' : 'Cancel'}</Button>
+				</Link>
 
 				{/* Variable Editor Modal */}
 				<Modal
@@ -205,7 +259,15 @@ const DocumentView = () => {
 						},
 						body: {
 							paddingTop: 0,
+							maxHeight: 'calc(100vh - 200px)', // Memberikan ruang untuk header
+							overflowY: 'auto' // Memungkinkan scroll jika konten terlalu panjang
 						},
+						root: {
+							zIndex: 1001
+						},
+						content: {
+							marginTop: '60px' // Memberikan jarak dari header
+						}
 					}}
 				>
 					{documentData?.variables && (

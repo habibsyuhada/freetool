@@ -11,18 +11,20 @@ import { theme } from '../styles/theme';
 import { Provider } from "react-redux";
 import store from "../store/store";
 import { SessionProvider } from "next-auth/react";
+import { LoadingProvider } from '@/components/loading/LoadingOverlay';
 
 function AppContent({ Component, pageProps }: { Component: AppProps['Component']; pageProps: Record<string, unknown> }) {
-  
   return (
     <MantineProvider theme={theme}>
       <Notifications />
       <HeaderMegaMenu />
-      <Component {...pageProps} />
+      <LoadingProvider>
+        <Component {...pageProps} />
+      </LoadingProvider>
       <FooterSocial />
     </MantineProvider>
   );
-};
+}
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   return (

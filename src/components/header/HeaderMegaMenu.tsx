@@ -38,8 +38,12 @@ export function HeaderMegaMenu() {
     cursorType: "pointer",
   });
 
+  const handleLinkClick = () => {
+    closeDrawer();
+  };
+
   const links = featureData.map((item) => (
-    <Link href={item.link} key={item.title} style={{ textDecoration: 'none' }}>
+    <Link href={item.link} key={item.title} style={{ textDecoration: 'none' }} onClick={handleLinkClick}>
       <UnstyledButton className={classes.subLink}>
         <Group wrap="nowrap" align="flex-start">
           <ThemeIcon size={34} variant="default" radius="md">
@@ -198,7 +202,7 @@ export function HeaderMegaMenu() {
         <ScrollArea h="calc(100vh - 80px" mx="-md">
           <Divider my="sm" />
 
-          <Link href="/" className={classes.link}>
+          <Link href="/" className={classes.link} onClick={handleLinkClick}>
             Home
           </Link>
           <UnstyledButton className={classes.link} onClick={toggleLinks}>
@@ -210,10 +214,10 @@ export function HeaderMegaMenu() {
             </Center>
           </UnstyledButton>
           <Collapse in={linksOpened}>{links}</Collapse>
-          <Link href="#" className={classes.link}>
+          <Link href="#" className={classes.link} onClick={handleLinkClick}>
             Blog
           </Link>
-          <Link href="#" className={classes.link}>
+          <Link href="#" className={classes.link} onClick={handleLinkClick}>
             Contact Us
           </Link>
 
@@ -238,6 +242,7 @@ export function HeaderMegaMenu() {
                   component={Link} 
                   href="/profile"
                   leftSection={<IconUser size={14} />}
+                  onClick={handleLinkClick}
                 >
                   Profile
                 </Button>
@@ -245,7 +250,10 @@ export function HeaderMegaMenu() {
                   variant="light" 
                   color="red" 
                   fullWidth 
-                  onClick={() => signOut()}
+                  onClick={() => {
+                    closeDrawer();
+                    signOut();
+                  }}
                   leftSection={<IconLogout size={14} />}
                 >
                   Logout
@@ -253,10 +261,10 @@ export function HeaderMegaMenu() {
               </>
             ) : (
               <>
-                <Link href="/login" style={{ textDecoration: 'none' }}>
+                <Link href="/login" style={{ textDecoration: 'none' }} onClick={handleLinkClick}>
                   <Button variant="default" fullWidth>Log in</Button>
                 </Link>
-                <Link href="/register" style={{ textDecoration: 'none' }}>
+                <Link href="/register" style={{ textDecoration: 'none' }} onClick={handleLinkClick}>
                   <Button fullWidth>Sign up</Button>
                 </Link>
               </>
