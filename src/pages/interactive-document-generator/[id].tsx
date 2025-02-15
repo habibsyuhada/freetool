@@ -123,13 +123,18 @@ const DocumentView = () => {
 	const handleDownloadPdf = async () => {
 		if (documentData) {
 			const htmlData = encodeURIComponent(currentHtml);
+			
+			// Menggunakan documentData.variables untuk mendapatkan nama margin dan variableValues untuk nilai terbaru
 			const margins = documentData.variables?.reduce((acc, v) => {
 				if (v.name.startsWith('margin_')) {
-					acc[v.name] = v.value;
+					// Mengambil nilai dari variableValues yang terbaru
+					acc[v.name] = variableValues[v.name] || v.value;
 				}
 				return acc;
 			}, {} as Record<string, string>);
 
+			console.log("margins", margins);
+			
 			const response = await axios.post('/api/generate-pdf', 
 				{ 
 					htmlData, 
