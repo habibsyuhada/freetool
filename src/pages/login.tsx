@@ -11,6 +11,11 @@ import Layout from '@/components/layout/Layout';
 export default function Login() {
   const router = useRouter();
   const { status } = useSession();
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -21,12 +26,6 @@ export default function Login() {
   if (status === "loading" || status === "authenticated") {
     return null;
   }
-
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
