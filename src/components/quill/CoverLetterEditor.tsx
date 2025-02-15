@@ -5,7 +5,6 @@ import { IconTrash, IconPlus } from '@tabler/icons-react';
 import axios from "axios";
 import { useSession } from 'next-auth/react';
 import 'react-quill-new/dist/quill.snow.css';
-import './style.css';
 import { encrypt } from '../../utils/encryption';
 import Link from 'next/link';
 import { useRouter } from 'next/router';

@@ -2,6 +2,8 @@
 import "@/styles/globals.css";
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
+import 'react-quill-new/dist/quill.snow.css';
+import '@/styles/quill.css';
 import type { AppProps } from "next/app";
 import { MantineProvider } from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
