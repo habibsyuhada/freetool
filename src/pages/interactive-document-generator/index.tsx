@@ -81,9 +81,9 @@ const HomePage = () => {
 
   return (
     <Layout
-      title="Interactive Document Generator"
-      description="Create engaging and interactive documents effortlessly with our Interactive Document Generator. Enhance your presentations and reports with dynamic content and user-friendly features."
-      keywords="interactive document generator, document creation, presentations, reports, dynamic content, online document tools"
+      title="Document Manager | FreeTool Interactive Document Generator"
+      description="Manage your documents with FreeTool's free document management system. Create, edit, and organize your interactive documents, letters, and reports all in one place. Access our free tools to streamline your document workflow."
+      keywords="free document management, document organizer, interactive documents, free document tools, document storage, document sharing"
     >
       <Container pt="xl">
         <Link href="/interactive-document-generator/editor">

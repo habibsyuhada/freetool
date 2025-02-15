@@ -79,7 +79,11 @@ export default function Register() {
   };
 
   return (
-    <Layout title="Sign Up" description="Create your FreeTool account">
+    <Layout
+      title="Create Account | FreeTool"
+      description="Join FreeTool and get free access to our complete suite of online tools. Create an account to manage documents, save your work, and access premium features at no cost."
+      keywords="free account registration, free tools signup, create account, free document tools, online tools access"
+    >
       <Container size={420} my={40}>
         <Title
           ta="center"

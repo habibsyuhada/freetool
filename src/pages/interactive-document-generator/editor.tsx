@@ -25,9 +25,9 @@ const EditorPage = () => {
 
   return (
     <Layout
-      title="Interactive Document Generator"
-      description="Create engaging and interactive documents effortlessly with our Interactive Document Generator. Enhance your presentations and reports with dynamic content and user-friendly features."
-      keywords="interactive document generator, document creation, presentations, reports, dynamic content, online document tools"
+      title="Create Document | FreeTool Interactive Document Generator"
+      description="Create and edit interactive documents for free with FreeTool's Document Generator. Design professional documents, letters, and reports with our user-friendly editor featuring rich text formatting and instant preview."
+      keywords="free document generator, online document editor, interactive document creator, free document tools, professional document maker, rich text editor"
     >
       <CoverLetterEditor documentData={documentData} />
     </Layout>

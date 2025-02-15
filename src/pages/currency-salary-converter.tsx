@@ -219,9 +219,9 @@ const CurrencyConverter = () => {
 
   return (
     <Layout
-      title="Currency & Salary Converter"
-      description="Convert currencies and calculate salaries across different countries with real-time exchange rates. Make informed financial decisions with our free currency converter tool."
-      keywords="currency converter, salary calculator, exchange rate converter, money converter, international salary, currency conversion tool"
+      title="Currency and Salary Converter | International Pay Calculator"
+      description="Compare salaries and convert currencies across different countries with real-time exchange rates. Calculate hourly, monthly, and yearly pay with our free international salary converter tool."
+      keywords="currency converter, salary calculator, international salary comparison, exchange rate calculator, hourly rate converter, global pay calculator, salary conversion tool, international wage comparison"
     >
       <Container>
         <Title order={2} mt="md" mb="md">

@@ -6,8 +6,9 @@ import Layout from '@/components/layout/Layout';
 export default function ComingSoon() {
   return (
     <Layout 
-      title="Coming Soon" 
-      description="This feature is coming soon. Stay tuned for updates!"
+      title="Coming Soon | New FreeTool Features"
+      description="Exciting new features are coming to FreeTool! Stay tuned for additional free online tools and enhanced capabilities to help streamline your workflow. Join our growing collection of free professional tools."
+      keywords="upcoming features, free tools, new online tools, free utilities, professional tools, web applications"
     >
       <Container 
         style={{ 

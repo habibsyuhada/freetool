@@ -28,9 +28,9 @@ const HomePage = () => {
 
   return (
     <Layout
-      title="Free Online Tools Collection"
-      description="FreeTool offers a collection of free online tools including currency converter, task management, URL shortener, QR code generator, and more to help streamline your daily tasks."
-      keywords="free online tools, currency converter, task management, url shortener, qr code generator, image compressor, user feedback tool, web tools, online utilities"
+      title="FreeTool - Free Online Tools Collection"
+      description="FreeTool offers a comprehensive collection of free online tools including document generator, currency converter, task management, and more. Access professional-grade tools without any cost."
+      keywords="free online tools, free document generator, free currency converter, free task management, free web tools, online utilities"
     >
       <Container fluid style={{ padding: 0 }}>
         {/* Welcome Section */}

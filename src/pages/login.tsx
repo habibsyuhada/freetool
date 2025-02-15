@@ -67,7 +67,11 @@ export default function Login() {
   };
 
   return (
-    <Layout title="Login" description="Login to FreeTool">
+    <Layout
+      title="Login | FreeTool Account Access"
+      description="Sign in to your FreeTool account to access our complete collection of free online tools. Manage your documents, track your usage, and unlock premium features - all completely free."
+      keywords="free account login, free tools access, user account, document management access, free online tools"
+    >
       <Container size={420} my={40}>
         <Title
           ta="center"
