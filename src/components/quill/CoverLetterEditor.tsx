@@ -122,30 +122,49 @@ const DocumentEditor = ({ documentData }: { documentData: DocumentData }) => {
     // Add any missing margin variables
     const allVariables = [...variables, ...missingMargins];
 
-    const userId = session.user.id;
     const url = "/api/documentInteractive";
     const method = documentData ? 'put' : 'post';
-    const encryptedId = encrypt(documentData?.id.toString() || '0');
+    const encryptedId = documentData?.id ? encrypt(documentData.id.toString()) : undefined;
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true
+    };
 
     try {
-      const datasent = {
-        id: method === 'put' ? encryptedId : '0',
-        name: documentName,
-        desc: documentDescription,
-        document_html: editorHtml,
-        userId: userId,
-        variables: allVariables,
-      };
-      await axios[method](url, datasent);
-
-      if (!documentData) {
-        router.push('/interactive-document-generator');
+      let requestData;
+      if (method === 'put') {
+        requestData = {
+          id: encryptedId,
+          name: documentName,
+          desc: documentDescription,
+          document_html: editorHtml,
+          variables: allVariables,
+        };
       } else {
-        alert('Document saved successfully!');
+        requestData = {
+          name: documentName,
+          desc: documentDescription,
+          document_html: editorHtml,
+          variables: allVariables,
+        };
       }
-    } catch (error) {
-      console.error('Error saving document:', error);
-      alert('Failed to save document. Please try again.');
+
+      const response = await axios[method](url, requestData, config);
+
+      if (response.status === 200 || response.status === 201) {
+        if (!documentData) {
+          router.push('/interactive-document-generator');
+        } else {
+          alert('Document saved successfully!');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error saving document:', error.response?.data || error);
+      const errorMessage = error.response?.data?.error || 'Failed to save document. Please try again.';
+      alert(errorMessage);
     }
   };
 

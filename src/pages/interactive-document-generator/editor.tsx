@@ -1,27 +1,42 @@
 import { useEffect, useState } from 'react';
 import CoverLetterEditor from '../../components/quill/CoverLetterEditor';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useRouter } from 'next/router';
 import Layout from '../../components/layout/Layout';
+import { useSession } from 'next-auth/react';
 
 const EditorPage = () => {
   const router = useRouter();
   const { id } = router.query;
   const [documentData, setDocumentData] = useState(null);
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (id) {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+
+    if (id && status === "authenticated") {
       const fetchDocument = async () => {
         try {
           const response = await axios.get(`/api/documentInteractive?id=${id}`);
           setDocumentData(response.data);
         } catch (error) {
           console.error("Error fetching document:", error);
+          if ((error as AxiosError)?.response?.status === 404) {
+            router.push('/interactive-document-generator');
+          }
         }
       };
       fetchDocument();
     }
-  }, [id]);
+  }, [id, status, router]);
+
+  // If loading or not authenticated, show nothing
+  if (status === "loading" || !session) {
+    return null;
+  }
 
   return (
     <Layout

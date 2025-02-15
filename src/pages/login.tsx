@@ -20,16 +20,20 @@ export default function Login() {
     setLoading(true);
     
     try {
+      console.log('Attempting login with:', { email: formData.email });
       const result = await signIn('credentials', {
         redirect: false,
         email: formData.email,
         password: formData.password,
       });
 
+      console.log('Login result:', result);
+
       if (result?.error) {
+        console.error('Login error details:', result.error);
         notifications.show({
           title: 'Error',
-          message: 'Invalid email or password',
+          message: result.error || 'Invalid email or password',
           color: 'red',
         });
         return;

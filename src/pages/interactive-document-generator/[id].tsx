@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Container, Title, Text, Loader, Alert, Button, Modal } from '@mantine/core';
 import { useRouter } from 'next/router';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import Layout from "@/components/layout/Layout";
 import VariableEditor from '@/components/quill/VariableEditor';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 
 type DocumentData = {
 	id: string;
@@ -23,6 +24,7 @@ const DocumentView = () => {
 	const [showVariableEditor, setShowVariableEditor] = useState(false);
 	const [currentHtml, setCurrentHtml] = useState('');
 	const [variableValues, setVariableValues] = useState<Record<string, string>>({});
+	const { data: session, status } = useSession();
 
 	// Fungsi untuk mengganti variabel dengan nilainya
 	const replaceVariablesWithValues = (text: string, variables: Array<{ name: string; value: string }>, values: Record<string, string>) => {
@@ -36,8 +38,13 @@ const DocumentView = () => {
 	};
 
 	useEffect(() => {
+		if (status === "unauthenticated") {
+			router.push("/login");
+			return;
+		}
+
 		const fetchDocument = async () => {
-			if (id) {
+			if (id && status === "authenticated") {
 				try {
 					const response = await axios.get(`/api/documentInteractive?id=${id}`);
 					setDocumentData(response.data);
@@ -62,7 +69,12 @@ const DocumentView = () => {
 					}
 				} catch (error) {
 					console.error("Error fetching document:", error);
-					setError("Failed to fetch document");
+					if ((error as AxiosError)?.response?.status === 404) {
+						setError("Document not found");
+						router.push('/interactive-document-generator');
+					} else {
+						setError("Failed to fetch document");
+					}
 				} finally {
 					setLoading(false);
 				}
@@ -70,7 +82,7 @@ const DocumentView = () => {
 		};
 
 		fetchDocument();
-	}, [id]);
+	}, [id, status, router]);
 
 	const handleVariableSave = (newValues: Record<string, string>) => {
 		setVariableValues(newValues);
@@ -153,6 +165,11 @@ const DocumentView = () => {
 			link.remove();
 		}
 	};
+
+	// If loading or not authenticated, show nothing
+	if (status === "loading" || !session) {
+		return null;
+	}
 
 	if (loading) {
 		return (

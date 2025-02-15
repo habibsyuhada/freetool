@@ -1,10 +1,18 @@
 import { NextApiRequest, NextApiResponse } from 'next';  
 import { PrismaClient } from '@prisma/client';  
 import { decrypt } from '../../utils/encryption';   
+import { getServerSession } from 'next-auth';
+import { authOptions } from './auth/[...nextauth]';
 
 const prisma = new PrismaClient();  
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {  
+  // Check authentication for all requests
+  const session = await getServerSession(req, res, authOptions);
+  if (!session?.user?.id) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   if (req.method === 'GET') {  
     try {  
       const { id } = req.query;  
@@ -16,10 +24,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: 'Invalid document ID' });  
           }  
 
-          // Get single document with variables  
-          const document = await prisma.documentinteractive.findUnique({  
+          // Get single document with variables and check ownership
+          const document = await prisma.documentinteractive.findFirst({  
             where: {  
-              id: parseInt(decryptedId),  
+              id: parseInt(decryptedId),
+              userId: session.user.id
             },  
             include: {  
               variables: {  
@@ -42,8 +51,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ error: 'Invalid document ID format' });  
         }  
       } else {  
-        // Get all documents  
-        const documents = await prisma.documentinteractive.findMany();  
+        // Get all documents for the authenticated user
+        const documents = await prisma.documentinteractive.findMany({
+          where: {
+            userId: session.user.id
+          }
+        });  
         return res.status(200).json(documents);  
       }  
     } catch (error) {  
@@ -52,10 +65,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }  
   } else if (req.method === 'POST') {  
     try {  
-      const { name, desc, document_html, userId, variables = [] } = req.body;  
+      const { name, desc, document_html, variables = [] } = req.body;  
 
-      if (!name || !userId) {  
-        return res.status(400).json({ error: 'Name and userId are required' });  
+      if (!name) {  
+        return res.status(400).json({ error: 'Name is required' });  
       }  
 
       // Add default margin variables if not present
@@ -81,13 +94,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Combine with margins first
       const allVariables = [...marginVariables, ...otherVariables];
 
-      // Create document with variables  
+      // Create document with variables using session user id
       const document = await prisma.documentinteractive.create({  
         data: {  
           name,  
           desc: desc || '',  
           document_html: document_html || '',  
-          userId,  
+          userId: session.user.id,  // Use session user id
           variables: {  
             create: allVariables.map((v: { name: string; value: string }) => ({  
               name: v.name,  
@@ -107,10 +120,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }  
   } else if (req.method === 'PUT') {  
     try {  
-      const { id, name, desc, document_html, userId, variables } = req.body;  
+      const { id, name, desc, document_html, variables } = req.body;  
 
-      if (!id || !name || !userId) {  
-        return res.status(400).json({ error: 'ID, name, and userId are required' });  
+      if (!id || !name) {  
+        return res.status(400).json({ error: 'ID and name are required' });  
       }  
 
       try {  
@@ -118,6 +131,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!decryptedId) {  
           return res.status(400).json({ error: 'Invalid document ID' });  
         }  
+
+        // First check if document exists and belongs to user
+        const existingDoc = await prisma.documentinteractive.findFirst({
+          where: {
+            id: parseInt(decryptedId),
+            userId: session.user.id
+          }
+        });
+
+        if (!existingDoc) {
+          return res.status(404).json({ error: 'Document not found or access denied' });
+        }
 
         // Update document and replace all variables  
         const document = await prisma.documentinteractive.update({  
@@ -128,7 +153,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             name,  
             desc: desc || '',  
             document_html: document_html || '',  
-            userId,  
             variables: {  
               deleteMany: {},  
               create: variables?.map((v: { name: string; value: string }) => ({  

@@ -7,9 +7,41 @@ import axios from "axios";
 import 'mantine-datatable/styles.css';
 import { encrypt } from '../../utils/encryption';
 import Layout from "@/components/layout/Layout";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 
 const HomePage = () => {
   type DocumentData = { id: number; name: string; desc: string; };
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [dataDocument, setDataDocument] = useState<DocumentData[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`/api/documentInteractive`);
+        setDataDocument(response.data as DocumentData[]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch documents.");
+      }
+    };
+
+    if (status === "authenticated") {
+      fetchData();
+    }
+  }, [status, router]);
+
+  // If loading or not authenticated, show nothing
+  if (status === "loading" || !session) {
+    return null;
+  }
 
   const columns = [
     {
@@ -47,23 +79,6 @@ const HomePage = () => {
       ),
     },
   ];
-
-  const [dataDocument, setDataDocument] = useState<DocumentData[]>([]);
-  const [error, setError] = useState<string | null>(null); // State untuk menyimpan pesan kesalahan  
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`/api/documentInteractive`);
-        setDataDocument(response.data as DocumentData[]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("Failed to fetch documents.");
-      }
-    };
-
-    fetchData();
-  }, []);
 
   const handleDelete = async (id: number) => {
     if (confirm("Are you sure you want to delete this document?")) {
