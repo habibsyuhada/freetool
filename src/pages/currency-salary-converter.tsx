@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Text, Box, Flex } from "@mantine/core";
+import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Text, Box } from "@mantine/core";
 import axios from "axios";
 import Layout from "@/components/layout/Layout";
 import { IconSquareRoundedChevronDown, IconSquareRoundedChevronUp } from '@tabler/icons-react';
@@ -35,6 +35,115 @@ const CurrencyConverter = () => {
   const [calcDay, setCalcDay] = useState(5);
   const [calcWeek, setCalcWeek] = useState(4);
   const [calcMonth, setCalcMonth] = useState(12);
+
+  const formatNumber = useCallback((num: number) => {
+    const res = new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
+    return res;
+  }, []);
+
+  const handleTableInformation = useCallback((value: string, category: string) => {
+    const rate = rateConversion[toCurrency];
+    let sourceValue = value;
+    let sourceTime = time;
+    let sourceCategory = category;
+    let sourceHours;
+    let sourceMonth;
+    let sourceYear;
+
+    if (sourceCategory == "time") {
+      sourceTime = value;
+      sourceValue = amountFrom;
+      sourceCategory = "from";
+    }
+
+    if (sourceTime == "Per Hours") {
+      sourceHours = parseFloat(sourceValue) * rate;
+      if (sourceCategory == "to") {
+        sourceHours = parseFloat(sourceValue) / rate;
+      }
+      sourceMonth = sourceHours * calcHours * calcDay * calcWeek;
+      sourceYear = sourceMonth * calcMonth;
+    } else if (sourceTime == "Per Month") {
+      sourceMonth = parseFloat(sourceValue) * rate;
+      if (sourceCategory == "to") {
+        sourceMonth = parseFloat(sourceValue) / rate;
+      }
+      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
+      sourceYear = sourceMonth * calcMonth;
+    } else if (sourceTime == "Per Year") {
+      sourceYear = parseFloat(sourceValue) * rate;
+      if (sourceCategory == "to") {
+        sourceYear = parseFloat(sourceValue) / rate;
+      }
+      sourceMonth = sourceYear / calcMonth;
+      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
+    }
+
+    if (sourceHours !== undefined && sourceMonth !== undefined && sourceYear !== undefined) {
+      if (sourceCategory == "from") {
+        setFromHoursTable(formatNumber(sourceHours));
+        setFromMonthTable(formatNumber(sourceMonth));
+        setFromYearTable(formatNumber(sourceYear));
+        setToHoursTable(formatNumber(sourceHours / rate));
+        setToMonthTable(formatNumber(sourceMonth / rate));
+        setToYearTable(formatNumber(sourceYear / rate));
+      } else if (sourceCategory == "to") {
+        setToHoursTable(formatNumber(sourceHours));
+        setToMonthTable(formatNumber(sourceMonth));
+        setToYearTable(formatNumber(sourceYear));
+        setFromHoursTable(formatNumber(sourceHours * rate));
+        setFromMonthTable(formatNumber(sourceMonth * rate));
+        setFromYearTable(formatNumber(sourceYear * rate));
+      }
+    }
+  }, [rateConversion, toCurrency, time, amountFrom, calcHours, calcDay, calcWeek, calcMonth, formatNumber]);
+
+  const handleAmountFromChange = useCallback((value: string) => {
+    let numericValue = value;
+    numericValue = numericValue.replace(/,/g, "");
+    let parseValue = parseFloat(numericValue);
+    if (isNaN(parseValue)) {
+      parseValue = 0;
+    }
+    setAmountFrom(value);
+
+    const rate = rateConversion[toCurrency];
+    let conversion = parseValue * rate;
+    if (isNaN(conversion)) {
+      conversion = 0;
+    }
+    setAmountTo(formatNumber(conversion));
+    handleTableInformation(numericValue, "from");
+  }, [rateConversion, toCurrency, handleTableInformation, formatNumber]);
+
+  const handleAmountToChange = useCallback((value: string) => {
+    let numericValue = value;
+    numericValue = numericValue.replace(/,/g, "");
+    let parseValue = parseFloat(numericValue);
+    if (isNaN(parseValue)) {
+      parseValue = 0;
+    }
+    setAmountTo(value);
+
+    const rate = rateConversion[toCurrency];
+    const conversion = parseValue / rate;
+    setAmountFrom(formatNumber(conversion));
+    handleTableInformation(numericValue, "to");
+  }, [rateConversion, toCurrency, formatNumber, handleTableInformation]);
+
+  const handleTimeChange = useCallback((value: string | null) => {
+    if (value) {
+      setTime(value);
+      handleTableInformation(value, "time");
+    }
+  }, [handleTableInformation]);
+
+  const handleFromCurrencyChange = useCallback((value: string) => {
+    setFromCurrency(value);
+  }, []);
 
   const fetchMasterCurrency = useCallback(async () => {
     try {
@@ -93,125 +202,15 @@ const CurrencyConverter = () => {
   useEffect(() => {
     fetchMasterCurrency();
     fetchRateConversion();
-  }, []);
-
-  const handleFromCurrencyChange = (value: string) => {
-    setFromCurrency(value);
-  };
+  }, [fetchMasterCurrency, fetchRateConversion]);
 
   useEffect(() => {
-    console.log("fromCurrency", fromCurrency);
     handleAmountFromChange(amountFrom);
-  }, [fromCurrency, toCurrency]);
+  }, [fromCurrency, toCurrency, handleAmountFromChange, amountFrom]);
 
   useEffect(() => {
     fetchRateConversion();
-  }, [fromCurrency]);
-
-  const handleAmountFromChange = (value: string) => {
-    let numericValue = value;
-    numericValue = numericValue.replace(/,/g, "");
-    let parseValue = parseFloat(numericValue);
-    if (isNaN(parseValue)) {
-      parseValue = 0;
-    }
-    setAmountFrom(value);
-
-    const rate = rateConversion[toCurrency];
-    let conversion = parseValue * rate;
-    if (isNaN(conversion)) {
-      conversion = 0;
-    }
-    setAmountTo(formatNumber(conversion));
-    handleTableInformation(numericValue, "from");
-  };
-
-  const handleAmountToChange = (value: string) => {
-    let numericValue = value;
-    numericValue = numericValue.replace(/,/g, "");
-    let parseValue = parseFloat(numericValue);
-    if (isNaN(parseValue)) {
-      parseValue = 0;
-    }
-    setAmountTo(value);
-
-    const rate = rateConversion[toCurrency];
-    const conversion = parseValue / rate;
-    setAmountFrom(formatNumber(conversion));
-    handleTableInformation(numericValue, "to");
-  };
-
-  const handleTimeChange = (value: string | null) => {
-    if (value) {
-      setTime(value);
-      handleTableInformation(value, "time");
-    }
-  };
-
-  const handleTableInformation = useCallback((value: string, category: string) => {
-    const rate = rateConversion[toCurrency];
-    let sourceValue = value;
-    let sourceTime = time;
-    let sourceCategory = category;
-    let sourceHours;
-    let sourceMonth;
-    let sourceYear;
-
-    if (sourceCategory == "time") {
-      sourceTime = value;
-      sourceValue = amountFrom;
-      sourceCategory = "from";
-    }
-
-    if (sourceTime == "Per Hours") {
-      sourceHours = parseFloat(sourceValue) * rate;
-      if (sourceCategory == "to") {
-        sourceHours = parseFloat(sourceValue) / rate;
-      }
-      sourceMonth = sourceHours * calcHours * calcDay * calcWeek;
-      sourceYear = sourceMonth * calcMonth;
-    } else if (sourceTime == "Per Month") {
-      sourceMonth = parseFloat(sourceValue) * rate;
-      if (sourceCategory == "to") {
-        sourceMonth = parseFloat(sourceValue) / rate;
-      }
-      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
-      sourceYear = sourceMonth * calcMonth;
-    } else if (sourceTime == "Per Year") {
-      sourceYear = parseFloat(sourceValue) * rate;
-      if (sourceCategory == "to") {
-        sourceYear = parseFloat(sourceValue) / rate;
-      }
-      sourceMonth = sourceYear / calcMonth;
-      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
-    }
-
-    if (sourceHours !== undefined && sourceMonth !== undefined && sourceYear !== undefined) {
-      if (sourceCategory == "from") {
-        setFromHoursTable(formatNumber(sourceHours));
-        setFromMonthTable(formatNumber(sourceMonth));
-        setFromYearTable(formatNumber(sourceYear));
-        setToHoursTable(formatNumber(sourceHours / rate));
-        setToMonthTable(formatNumber(sourceMonth / rate));
-        setToYearTable(formatNumber(sourceYear / rate));
-      } else if (sourceCategory == "to") {
-        setToHoursTable(formatNumber(sourceHours));
-        setToMonthTable(formatNumber(sourceMonth));
-        setToYearTable(formatNumber(sourceYear));
-        setFromHoursTable(formatNumber(sourceHours * rate));
-        setFromMonthTable(formatNumber(sourceMonth * rate));
-        setFromYearTable(formatNumber(sourceYear * rate));
-      }
-    }
-  }, [rateConversion, toCurrency, amountFrom, calcDay, calcHours, calcMonth, calcWeek, time]);
-
-  const formatNumber = (num: number) => {
-    const res = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(num);
-    return res;
-  };
+  }, [fromCurrency, fetchRateConversion]);
 
   useEffect(() => {
     handleTableInformation(amountFrom, "from");

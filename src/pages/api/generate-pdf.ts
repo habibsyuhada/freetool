@@ -1,61 +1,52 @@
 // pages/api/generate-pdf.ts  
 import { NextApiRequest, NextApiResponse } from 'next';  
 import puppeteer from 'puppeteer';  
-import fs from 'fs'; // Pastikan fs diimpor jika Anda ingin menyimpan file  
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {  
-  if (req.method === 'POST') {  
-    const { htmlData } = req.body;  
+  if (req.method !== 'POST') {  
+    return res.status(405).json({ message: 'Method not allowed' });  
+  }  
 
-    // Pastikan data HTML ada  
-    if (!htmlData) {  
-      return res.status(400).json({ error: 'HTML data is required' });  
-    }  
-
-    // Decode HTML data  
+  try {  
+    const { htmlData, margins } = req.body;  
     const decodedHtml = decodeURIComponent(htmlData);  
 
-    const completeHtml = `  
-    <html>  
-      <head>  
-        <style>  
-          body {  
-            font-family: 'Helvetica', 'Arial', sans-serif;  
-          }  
-        </style>  
-      </head>  
-      <body>  
-        ${decodedHtml} <!-- Menyisipkan HTML yang diterima di sini -->  
-      </body>  
-    </html>`;  
+    // Set default margins if not provided  
+    const defaultMargins = {  
+      top: '20',  
+      right: '20',  
+      bottom: '20',  
+      left: '20'  
+    };  
 
-    try {   
-      const browser = await puppeteer.launch({ headless: true });  
-      const page = await browser.newPage();  
+    const pdfMargins = {  
+      top: `${margins?.margin_top || defaultMargins.top}mm`,  
+      right: `${margins?.margin_right || defaultMargins.right}mm`,  
+      bottom: `${margins?.margin_bottom || defaultMargins.bottom}mm`,  
+      left: `${margins?.margin_left || defaultMargins.left}mm`,  
+    };  
 
-      // Set content to the decoded HTML  
-      await page.setContent(completeHtml, { waitUntil: 'domcontentloaded' });  
+    const browser = await puppeteer.launch({  
+      headless: true,  
+      args: ['--no-sandbox']  
+    });  
 
-      // Generate PDF  
-      console.log("Generating PDF...");  
-      const pdfBuffer = await page.pdf({  
-        format: 'A4',  
-        printBackground: true,  
-      });  
+    const page = await browser.newPage();  
+    await page.setContent(decodedHtml, { waitUntil: 'networkidle0' });  
 
-      await browser.close();  
+    const pdf = await page.pdf({  
+      format: 'A4',  
+      margin: pdfMargins,  
+      printBackground: true  
+    });  
 
-      // Set response headers for PDF download  
-      res.setHeader('Content-Type', 'application/pdf');  
-      res.setHeader('Content-Disposition', 'attachment; filename=document.pdf');  
-      res.send(Buffer.from(pdfBuffer)); // Menggunakan Buffer.from()  
-      res.end(); // Menandakan bahwa respons telah selesai  
-    } catch (error) {  
-      console.error("Error generating PDF:", error);  
-      res.status(500).json({ error: 'Failed to generate PDF' });  
-    }  
-  } else {  
-    res.setHeader('Allow', ['POST']);  
-    res.status(405).end(`Method ${req.method} Not Allowed`);  
+    await browser.close();  
+
+    res.setHeader('Content-Type', 'application/pdf');  
+    res.setHeader('Content-Disposition', 'attachment; filename=document.pdf');  
+    res.send(pdf);  
+  } catch (error) {  
+    console.error('Error generating PDF:', error);  
+    res.status(500).json({ message: 'Error generating PDF' });  
   }  
 }

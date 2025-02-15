@@ -1,15 +1,21 @@
 import { useSession } from 'next-auth/react';  
 import { sign } from 'jsonwebtoken';  
 
-const linkHabitown = () => {  
+const LinkHabitown = () => {  
   const { data: session } = useSession();  
 
   const handleRedirectToB = () => {  
     if (session) {  
+      const secret = process.env.NEXT_PUBLIC_ENCRYPT_SECRET;
+      if (!secret) {
+        console.error('Encryption secret is not set');
+        return;
+      }
+
       // Buat token JWT  
       const token = sign(  
         { id: session.user.id, email: session.user.email },  
-        process.env.NEXT_PUBLIC_ENCRYPT_SECRET,  
+        secret,  
         { expiresIn: '1h' }  
       );  
 
@@ -28,4 +34,4 @@ const linkHabitown = () => {
   );  
 };  
 
-export {linkHabitown};  
+export { LinkHabitown };  

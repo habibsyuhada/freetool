@@ -64,14 +64,25 @@ model currency {
 }
 
 model documentinteractive {
-  id            Int     @id @default(autoincrement())
+  id            Int                           @id @default(autoincrement())
   name          String?
   desc          String?
   userId        String?
   document_html String?
+  variables     documentinteractive_variable[]
 }
 
 model master_currency {
   code String  @id @db.VarChar
   name String? @db.VarChar
+}
+
+model documentinteractive_variable {
+  id          Int                  @id @default(autoincrement())
+  document    documentinteractive  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId  Int
+  name        String?              @db.VarChar
+  value       String?              @db.VarChar
+
+  @@index([documentId])
 }
