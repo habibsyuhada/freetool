@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useDisclosure } from "@mantine/hooks";
-import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Text, Box } from "@mantine/core";
+import { Container, Title, TextInput, Select, Table, Alert, SimpleGrid, Grid, Card, Button, Collapse, Text, Box, Flex } from "@mantine/core";
 import axios from "axios";
 import Layout from "@/components/layout/Layout";
+import { IconSquareRoundedChevronDown, IconSquareRoundedChevronUp } from '@tabler/icons-react';
 
 interface Currency {
   code: string;
@@ -21,9 +22,9 @@ const CurrencyConverter = () => {
   const [searchValueFrom, setSearchValueFrom] = useState("");
   const [searchValueTo, setSearchValueTo] = useState("");
   const [time, setTime] = useState("Per Hours");
-  const [isCollapseFromOpen, { toggle: toggleCollapseFromOpen }] = useDisclosure(false);
-  const [isCollapseToOpen, { toggle: toggleCollapseToOpen }] = useDisclosure(false);
-  const [isAdvanceSettingOpen, { toggle: toggleAdvanceSettingOpen }] = useDisclosure(false);
+  const [isCollapseFromOpen, { toggle: toggleCollapseFromOpen }] = useDisclosure(true);
+  const [isCollapseToOpen, { toggle: toggleCollapseToOpen }] = useDisclosure(true);
+  const [isAdvanceSettingOpen, { toggle: toggleAdvanceSettingOpen }] = useDisclosure(true);
   const [fromHoursTable, setFromHoursTable] = useState("0");
   const [fromMonthTable, setFromMonthTable] = useState("0");
   const [fromYearTable, setFromYearTable] = useState("0");
@@ -117,7 +118,10 @@ const CurrencyConverter = () => {
     setAmountFrom(value);
 
     const rate = rateConversion[toCurrency];
-    const conversion = parseValue * rate;
+    let conversion = parseValue * rate;
+    if (isNaN(conversion)) {
+      conversion = 0;
+    }
     setAmountTo(formatNumber(conversion));
     handleTableInformation(numericValue, "from");
   };
@@ -287,7 +291,7 @@ const CurrencyConverter = () => {
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Card withBorder shadow="sm" radius="md">
               <Card.Section>
-                <Button fullWidth onClick={toggleCollapseFromOpen}>
+                <Button fullWidth onClick={toggleCollapseFromOpen} rightSection={isCollapseFromOpen ? <IconSquareRoundedChevronUp /> : <IconSquareRoundedChevronDown />}>
                   {fromCurrency} {formatNumber(parseFloat(String(amountFrom).replace(/,/g, "")))} {time} mean ...
                 </Button>
               </Card.Section>
@@ -321,7 +325,7 @@ const CurrencyConverter = () => {
           <Grid.Col span={{ base: 12, sm: 6 }}>
             <Card withBorder shadow="sm" radius="md">
               <Card.Section>
-                <Button fullWidth onClick={toggleCollapseToOpen}>
+                <Button fullWidth onClick={toggleCollapseToOpen} rightSection={isCollapseToOpen ? <IconSquareRoundedChevronUp /> : <IconSquareRoundedChevronDown />}>
                   {toCurrency} {formatNumber(parseFloat(String(amountTo).replace(/,/g, "")))} {time} mean ...
                 </Button>
               </Card.Section>
@@ -358,7 +362,7 @@ const CurrencyConverter = () => {
           <Grid.Col span={{ base: 12 }}>
             <Card withBorder shadow="sm" radius="md">
               <Card.Section>
-                <Button fullWidth onClick={toggleAdvanceSettingOpen}>
+                <Button fullWidth onClick={toggleAdvanceSettingOpen} rightSection={isAdvanceSettingOpen ? <IconSquareRoundedChevronUp /> : <IconSquareRoundedChevronDown />}>
                   Advance Setting
                 </Button>
               </Card.Section>
