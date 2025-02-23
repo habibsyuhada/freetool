@@ -6,6 +6,7 @@ declare module 'next-auth' {
   interface User {  
     id: string; // Pastikan id ada di sini  
     token?: string; // Tambahkan properti token  
+    name?: string | null;
   }  
 
   interface Session extends DefaultSession {  
@@ -15,5 +16,6 @@ declare module 'next-auth' {
   interface JWT {  
     id?: string;  
     token?: string; // Tambahkan properti token  
+    name?: string | null;
   }  
 }

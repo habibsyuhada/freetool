@@ -18,7 +18,7 @@ export const featureData = [
     icon: IconCode,
     title: "Task Management",
     description: "Manage your tasks efficiently with our intuitive task management tool. Organize, prioritize, and track your progress.",
-    link: "/coming-soon",
+    link: "/task-management",
   },
   {
     icon: IconFingerprint,
