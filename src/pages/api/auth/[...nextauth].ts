@@ -1,97 +1,63 @@
-import { NextApiHandler } from 'next';
-import NextAuth, { NextAuthOptions } from 'next-auth';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import GoogleProvider from 'next-auth/providers/google';
+import { NextApiRequest, NextApiResponse } from 'next';
+import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import prisma from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
+import { supabase } from '@/lib/supabase';
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
-  secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+export const authOptions: AuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
-      name: 'credentials',
+      name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'text' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        try {
-          if (!credentials?.email || !credentials?.password) {
-            console.error('Missing credentials');
-            throw new Error('Invalid credentials');
-          }
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Please enter your email and password');
+        }
 
-          console.log('Attempting to find user:', credentials.email);
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email,
-            },
-          });
+        const { data: { user }, error } = await supabase.auth.signInWithPassword({
+          email: credentials.email,
+          password: credentials.password,
+        });
 
-          if (!user || !user.password) {
-            console.error('User not found or no password set for:', credentials.email);
-            throw new Error('User not found');
-          }
+        if (error) {
+          throw new Error(error.message);
+        }
 
-          console.log('Found user, verifying password');
-          const isValid = await bcrypt.compare(credentials.password, user.password);
-
-          if (!isValid) {
-            console.error('Invalid password for user:', credentials.email);
-            throw new Error('Invalid password');
-          }
-
-          console.log('Password verified successfully');
+        if (user) {
           return {
             id: user.id,
             email: user.email,
-            name: user.name,
-            image: user.image,
+            name: user.user_metadata?.name,
           };
-        } catch (error) {
-          console.error('Authorization error:', error);
-          throw error;
         }
-      },
-    }),
+
+        return null;
+      }
+    })
   ],
   pages: {
     signIn: '/login',
-    signOut: '/login',
-    error: '/login',
+    error: '/auth/error',
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.email = user.email;
-        token.name = user.name;
-        token.image = user.image;
       }
       return token;
     },
     async session({ session, token }) {
       if (session?.user) {
         session.user.id = token.id as string;
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
-        session.user.image = token.image as string;
       }
       return session;
-    },
+    }
   },
-  debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
-const authHandler: NextApiHandler = NextAuth(authOptions);
-export default authHandler;
+export default async function auth(req: NextApiRequest, res: NextApiResponse) {
+  return await NextAuth(req, res, authOptions);
+}

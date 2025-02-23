@@ -7,6 +7,7 @@ import { Paper, TextInput, PasswordInput, Button, Title, Text, Container, Stack,
 // import { IconBrandGoogle } from '@tabler/icons-react';
 import Layout from '@/components/layout/Layout';
 import { notifications } from '@mantine/notifications';
+import { IconX } from '@tabler/icons-react';
 
 export default function Register() {
   const router = useRouter();
@@ -17,7 +18,6 @@ export default function Register() {
     password: '',
     confirmPassword: '',
   });
-  const [error, setError] = useState('');
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -33,18 +33,27 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
     
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      notifications.show({
+        title: 'Error',
+        message: 'Passwords do not match',
+        color: 'red',
+        icon: <IconX size={16} />,
+      });
       setLoading(false);
       return;
     }
 
     if (!termsAccepted) {
-      setError('You must accept the terms and conditions');
+      notifications.show({
+        title: 'Error',
+        message: 'You must accept the terms and conditions',
+        color: 'red',
+        icon: <IconX size={16} />,
+      });
       setLoading(false);
       return;
     }
@@ -63,7 +72,14 @@ export default function Register() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        notifications.show({
+          title: 'Registration Error',
+          message: data.message || 'Something went wrong',
+          color: 'red',
+          icon: <IconX size={16} />,
+        });
+        setLoading(false);
+        return;
       }
 
       // Show success notification
@@ -75,8 +91,13 @@ export default function Register() {
 
       // Redirect to login page
       router.push('/login');
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    } catch (error: any) {
+      notifications.show({
+        title: 'Error',
+        message: error?.message || 'An unexpected error occurred',
+        color: 'red',
+        icon: <IconX size={16} />,
+      });
       console.error('Registration error:', error);
     } finally {
       setLoading(false);
@@ -118,12 +139,6 @@ export default function Register() {
         </Text>
 
         <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-          {error && (
-            <Text c="red" size="sm" mb="md">
-              {error}
-            </Text>
-          )}
-
           <form onSubmit={handleSubmit}>
             <Stack>
               <TextInput

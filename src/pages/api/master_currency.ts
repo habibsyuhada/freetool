@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { supabase } from '@/lib/supabase';
 
 interface MasterCurrency {
   code: string;
@@ -10,51 +8,73 @@ interface MasterCurrency {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
-    const { code } = req.query;
+    try {
+      const { data, error } = await supabase
+        .from('master_currency')
+        .select('*');
 
-    if (code) {
-      const conversion = await prisma.master_currency.findUnique({
-        where: { code: String(code) },
-      });
-
-      if (conversion) {
-        res.status(200).json(conversion);
-      } else {
-        res.status(200).json([conversion]);
+      if (error) {
+        throw error;
       }
-    } else {
-      const conversions = await prisma.master_currency.findMany();
-      res.status(200).json(conversions);
+
+      return res.status(200).json(data);
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
     }
   } else if (req.method === 'POST') {
-    const { code, name }: MasterCurrency = req.body;
+    try {
+      const currency: MasterCurrency = req.body;
+      
+      const { error } = await supabase
+        .from('master_currency')
+        .upsert({
+          code: currency.code,
+          name: currency.name
+        });
 
-    const newConversion = await prisma.master_currency.create({
-      data: {
-        code,
-        name,
-      },
-    });
-    res.status(201).json(newConversion);
+      if (error) {
+        throw error;
+      }
+
+      return res.status(200).json({ message: 'Master currency added successfully' });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
   } else if (req.method === 'PUT') {
-    const { code, name }: MasterCurrency = req.body;
+    try {
+      const currency: MasterCurrency = req.body;
+      
+      const { error } = await supabase
+        .from('master_currency')
+        .update({ name: currency.name })
+        .eq('code', currency.code);
 
-    const updatedConversion = await prisma.master_currency.update({
-      where: { code },
-      data: {
-        name,
-      },
-    });
-    res.status(200).json(updatedConversion);
+      if (error) {
+        throw error;
+      }
+
+      return res.status(200).json({ message: 'Master currency updated successfully' });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
   } else if (req.method === 'DELETE') {
-    const { code } = req.body;
+    try {
+      const { code } = req.body;
+      
+      const { error } = await supabase
+        .from('master_currency')
+        .delete()
+        .eq('code', code);
 
-    await prisma.master_currency.delete({
-      where: { code },
-    });
-    res.status(204).end();
-  } else {
-    res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+      if (error) {
+        throw error;
+      }
+
+      return res.status(204).end();
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
   }
+
+  return res.status(405).json({ error: 'Method not allowed' });
 }

@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import { supabase } from '@/lib/supabase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -16,41 +14,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Validate password
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password should be at least 6 characters' });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Additional password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{6,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ 
+        message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' 
+      });
+    }
 
-    // Create user with required fields
-    const user = await prisma.user.create({
-      data: {
-        id: crypto.randomUUID(), // Generate a UUID for the user
-        name: name || null,
-        email,
-        password: hashedPassword,
-        updatedAt: new Date(),
+    // Sign up user with Supabase
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name || null,
+        },
+        emailRedirectTo: `${process.env.NEXTAUTH_URL}/auth/callback`
       },
     });
 
-    // Create credentials account with required fields
-    await prisma.account.create({
-      data: {
-        id: crypto.randomUUID(), // Generate a UUID for the account
-        userId: user.id,
-        type: 'credentials',
-        provider: 'credentials',
-        providerAccountId: user.id,
-      },
-    });
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
 
-    return res.status(200).json({ message: 'User created successfully', userId: user.id });
+    return res.status(200).json({ 
+      message: 'User created successfully', 
+      userId: data.user?.id 
+    });
   } catch (error: any) {
     console.error('Registration error:', error?.message || 'Unknown error');
     return res.status(500).json({ 

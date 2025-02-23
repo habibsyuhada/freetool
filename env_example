@@ -1,6 +1,12 @@
 # Rename it to .env and fill in the values
 
-DATABASE_URL="postgresql://username:password@host:port/database_name"
+# Database (Choose either PostgreSQL or Supabase)
+# For PostgreSQL:
+# DATABASE_URL="postgresql://username:password@host:port/database_name"
+# For Supabase:
+NEXT_PUBLIC_SUPABASE_URL="your-project-url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+
 NEXT_PUBLIC_GTM_ID=GTM-XXXXXXXX
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"

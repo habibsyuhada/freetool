@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { supabase } from '@/lib/supabase';
 
 interface Currency {
   base_code: string;
@@ -11,54 +9,168 @@ interface Currency {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
-    const { base_code } = req.query;
+    try {
+      const { base_code } = req.query;
+      console.log('Fetching currency data for base_code:', base_code);
 
-    if (base_code) {
-      const conversion = await prisma.currency.findUnique({
-        where: { base_code: String(base_code) },
-      });
-
-      if (conversion) {
-        res.status(200).json(conversion);
-      } else {
-        res.status(200).json([]);
-        // res.status(404).json({ message: 'Conversion not found' });
+      let query = supabase.from('currency').select('*');
+      
+      if (base_code) {
+        query = query.eq('base_code', base_code);
       }
-    } else {
-      const conversions = await prisma.currency.findMany();
-      res.status(200).json(conversions);
+
+      const { data, error } = await query;
+      console.log('Supabase response:', { data, error });
+
+      if (error) {
+        console.error('Supabase error:', error);
+        return res.status(500).json({ 
+          error: error.message,
+          data: base_code ? {
+            base_code: base_code,
+            conversion_rates: "{}",
+            update_date: new Date().toISOString()
+          } : []
+        });
+      }
+
+      // If requesting specific currency but not found
+      if (base_code && (!data || data.length === 0)) {
+        console.log('Currency not found, fetching from external API');
+        try {
+          const externalResponse = await fetch(`https://v6.exchangerate-api.com/v6/fe7dfda1cacbc547ab0385d6/latest/${base_code}`);
+          const externalData = await externalResponse.json();
+          
+          if (externalResponse.ok) {
+            // Insert the new data
+            const { error: insertError } = await supabase
+              .from('currency')
+              .upsert({
+                base_code: base_code,
+                conversion_rates: JSON.stringify(externalData.conversion_rates),
+                update_date: new Date().toISOString()
+              });
+
+            if (insertError) {
+              console.error('Error inserting new currency data:', insertError);
+            }
+
+            return res.status(200).json({
+              base_code: base_code,
+              conversion_rates: JSON.stringify(externalData.conversion_rates),
+              update_date: new Date().toISOString()
+            });
+          } else {
+            console.error('External API error:', externalData);
+            return res.status(404).json({ 
+              error: `Currency with base_code ${base_code} not found`,
+              data: {
+                base_code: base_code,
+                conversion_rates: "{}",
+                update_date: new Date().toISOString()
+              }
+            });
+          }
+        } catch (externalError) {
+          console.error('External API error:', externalError);
+          return res.status(404).json({ 
+            error: `Currency with base_code ${base_code} not found`,
+            data: {
+              base_code: base_code,
+              conversion_rates: "{}",
+              update_date: new Date().toISOString()
+            }
+          });
+        }
+      }
+
+      // Ensure conversion_rates is always a valid JSON string
+      const formattedData = data?.map(item => ({
+        ...item,
+        conversion_rates: typeof item.conversion_rates === 'string' 
+          ? item.conversion_rates 
+          : JSON.stringify(item.conversion_rates || {}),
+        update_date: item.update_date || new Date().toISOString()
+      }));
+
+      if (base_code) {
+        return res.status(200).json(formattedData?.[0] || {
+          base_code: base_code,
+          conversion_rates: "{}",
+          update_date: new Date().toISOString()
+        });
+      }
+
+      return res.status(200).json(formattedData || []);
+    } catch (error: any) {
+      console.error('API error:', error);
+      return res.status(500).json({ 
+        error: error.message,
+        data: req.query.base_code ? {
+          base_code: req.query.base_code,
+          conversion_rates: "{}",
+          update_date: new Date().toISOString()
+        } : []
+      });
     }
   } else if (req.method === 'POST') {
-    const { base_code, conversion_rates, update_date }: Currency = req.body;
+    try {
+      const currency: Currency = req.body;
+      
+      const { error } = await supabase
+        .from('currency')
+        .upsert({
+          base_code: currency.base_code,
+          conversion_rates: currency.conversion_rates,
+          update_date: currency.update_date
+        });
 
-    const newConversion = await prisma.currency.create({
-      data: {
-        base_code,
-        conversion_rates: typeof conversion_rates === 'object' ? JSON.stringify(conversion_rates) : conversion_rates,
-        update_date: `${update_date}T00:00:00.000Z`,
-      },
-    });
-    res.status(201).json(newConversion);
+      if (error) {
+        throw error;
+      }
+
+      return res.status(200).json({ message: 'Currency updated successfully' });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
   } else if (req.method === 'PUT') {
-    const { base_code, conversion_rates, update_date }: Currency = req.body;
+    try {
+      const { base_code, conversion_rates, update_date }: Currency = req.body;
 
-    const updatedConversion = await prisma.currency.update({
-      where: { base_code: String(base_code) },
-      data: {
-        conversion_rates: typeof conversion_rates === 'object' ? JSON.stringify(conversion_rates) : conversion_rates,
-        update_date: `${update_date}T00:00:00.000Z`,
-      },
-    });
-    res.status(200).json(updatedConversion);
+      const { error } = await supabase
+        .from('currency')
+        .update({
+          conversion_rates: typeof conversion_rates === 'object' ? JSON.stringify(conversion_rates) : conversion_rates,
+          update_date: update_date,
+        })
+        .eq('base_code', base_code);
+
+      if (error) {
+        throw error;
+      }
+
+      return res.status(200).json({ message: 'Currency updated successfully' });
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
   } else if (req.method === 'DELETE') {
-    const { base_code } = req.body;
+    try {
+      const { base_code } = req.body;
 
-    await prisma.currency.delete({
-      where: { base_code },
-    });
-    res.status(204).end();
-  } else {
-    res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+      const { error } = await supabase
+        .from('currency')
+        .delete()
+        .eq('base_code', base_code);
+
+      if (error) {
+        throw error;
+      }
+
+      return res.status(204).end();
+    } catch (error: any) {
+      return res.status(500).json({ error: error.message });
+    }
   }
+
+  return res.status(405).json({ error: 'Method not allowed' });
 }

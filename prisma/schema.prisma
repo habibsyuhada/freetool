@@ -1,15 +1,17 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public", "auth"]
 }
 
 model Account {
   id                String  @id
-  userId            String
+  userId            String  @db.Uuid
   type              String
   provider          String
   providerAccountId String?
@@ -23,6 +25,7 @@ model Account {
   User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@schema("public")
 }
 
 model Habit {
@@ -31,9 +34,11 @@ model Habit {
   description String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime
-  userId      String
+  userId      String        @db.Uuid
   User        User          @relation(fields: [userId], references: [id])
   HabitRecord HabitRecord[]
+
+  @@schema("public")
 }
 
 model HabitRecord {
@@ -42,39 +47,54 @@ model HabitRecord {
   completed Boolean  @default(false)
   habitId   Int
   Habit     Habit    @relation(fields: [habitId], references: [id])
+
+  @@schema("public")
 }
 
 model User {
-  id            String    @id
+  id            String    @id @db.Uuid
   name          String?
   email         String    @unique
   password      String?
   emailVerified DateTime?
   image         String?
   createdAt     DateTime  @default(now())
-  updatedAt     DateTime
+  updatedAt     DateTime  @updatedAt
   Account       Account[]
   Habit         Habit[]
+  Document      documentinteractive[]
+
+  @@schema("auth")
 }
 
 model currency {
   base_code        String    @id @db.VarChar
   conversion_rates String?
   update_date      DateTime? @db.Timestamp(6)
+
+  @@schema("public")
 }
 
 model documentinteractive {
   id            Int                           @id @default(autoincrement())
-  name          String?
-  desc          String?
-  userId        String?
-  document_html String?
+  name          String                        @db.VarChar
+  desc          String?                       @db.VarChar
+  document_html String?                       @db.Text
+  userId        String                        @db.Uuid
+  createdAt     DateTime                      @default(now())
+  updatedAt     DateTime                      @default(now()) @updatedAt
   variables     documentinteractive_variable[]
+  user          User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@schema("public")
 }
 
 model master_currency {
   code String  @id @db.VarChar
   name String? @db.VarChar
+
+  @@schema("public")
 }
 
 model documentinteractive_variable {
@@ -85,4 +105,5 @@ model documentinteractive_variable {
   value       String?              @db.VarChar
 
   @@index([documentId])
+  @@schema("public")
 }

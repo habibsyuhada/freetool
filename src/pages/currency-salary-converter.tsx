@@ -45,59 +45,67 @@ const CurrencyConverter = () => {
   }, []);
 
   const handleTableInformation = useCallback((value: string, category: string) => {
+    // Ensure we have valid rate conversion data
+    if (!rateConversion || !toCurrency || !(toCurrency in rateConversion)) {
+      console.error('Invalid rate conversion data');
+      return;
+    }
+
     const rate = rateConversion[toCurrency];
     let sourceValue = value;
     let sourceTime = time;
     let sourceCategory = category;
-    let sourceHours;
-    let sourceMonth;
-    let sourceYear;
+    let sourceHours = 0;
+    let sourceMonth = 0;
+    let sourceYear = 0;
 
-    if (sourceCategory == "time") {
+    if (sourceCategory === "time") {
       sourceTime = value;
       sourceValue = amountFrom;
       sourceCategory = "from";
     }
 
-    if (sourceTime == "Per Hours") {
-      sourceHours = parseFloat(sourceValue) * rate;
-      if (sourceCategory == "to") {
-        sourceHours = parseFloat(sourceValue) / rate;
+    // Parse the source value, defaulting to 0 if invalid
+    const numericValue = parseFloat(sourceValue.replace(/,/g, "")) || 0;
+
+    if (sourceTime === "Per Hours") {
+      sourceHours = numericValue;
+      if (sourceCategory === "to") {
+        sourceHours = numericValue / rate;
       }
-      sourceMonth = sourceHours * calcHours * calcDay * calcWeek;
-      sourceYear = sourceMonth * calcMonth;
-    } else if (sourceTime == "Per Month") {
-      sourceMonth = parseFloat(sourceValue) * rate;
-      if (sourceCategory == "to") {
-        sourceMonth = parseFloat(sourceValue) / rate;
+      sourceMonth = sourceHours * (calcHours || 8) * (calcDay || 5) * (calcWeek || 4);
+      sourceYear = sourceMonth * (calcMonth || 12);
+    } else if (sourceTime === "Per Month") {
+      sourceMonth = numericValue;
+      if (sourceCategory === "to") {
+        sourceMonth = numericValue / rate;
       }
-      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
-      sourceYear = sourceMonth * calcMonth;
-    } else if (sourceTime == "Per Year") {
-      sourceYear = parseFloat(sourceValue) * rate;
-      if (sourceCategory == "to") {
-        sourceYear = parseFloat(sourceValue) / rate;
+      sourceHours = sourceMonth / ((calcHours || 8) * (calcDay || 5) * (calcWeek || 4));
+      sourceYear = sourceMonth * (calcMonth || 12);
+    } else if (sourceTime === "Per Year") {
+      sourceYear = numericValue;
+      if (sourceCategory === "to") {
+        sourceYear = numericValue / rate;
       }
-      sourceMonth = sourceYear / calcMonth;
-      sourceHours = sourceMonth / calcHours / calcDay / calcWeek;
+      sourceMonth = sourceYear / (calcMonth || 12);
+      sourceHours = sourceMonth / ((calcHours || 8) * (calcDay || 5) * (calcWeek || 4));
     }
 
-    if (sourceHours !== undefined && sourceMonth !== undefined && sourceYear !== undefined) {
-      if (sourceCategory == "from") {
-        setFromHoursTable(formatNumber(sourceHours));
-        setFromMonthTable(formatNumber(sourceMonth));
-        setFromYearTable(formatNumber(sourceYear));
-        setToHoursTable(formatNumber(sourceHours / rate));
-        setToMonthTable(formatNumber(sourceMonth / rate));
-        setToYearTable(formatNumber(sourceYear / rate));
-      } else if (sourceCategory == "to") {
-        setToHoursTable(formatNumber(sourceHours));
-        setToMonthTable(formatNumber(sourceMonth));
-        setToYearTable(formatNumber(sourceYear));
-        setFromHoursTable(formatNumber(sourceHours * rate));
-        setFromMonthTable(formatNumber(sourceMonth * rate));
-        setFromYearTable(formatNumber(sourceYear * rate));
-      }
+    // Update the table values
+    if (sourceCategory === "from") {
+      setFromHoursTable(formatNumber(sourceHours));
+      setFromMonthTable(formatNumber(sourceMonth));
+      setFromYearTable(formatNumber(sourceYear));
+      setToHoursTable(formatNumber(sourceHours * rate));
+      setToMonthTable(formatNumber(sourceMonth * rate));
+      setToYearTable(formatNumber(sourceYear * rate));
+    } else if (sourceCategory === "to") {
+      setToHoursTable(formatNumber(sourceHours));
+      setToMonthTable(formatNumber(sourceMonth));
+      setToYearTable(formatNumber(sourceYear));
+      setFromHoursTable(formatNumber(sourceHours * rate));
+      setFromMonthTable(formatNumber(sourceMonth * rate));
+      setFromYearTable(formatNumber(sourceYear * rate));
     }
   }, [rateConversion, toCurrency, time, amountFrom, calcHours, calcDay, calcWeek, calcMonth, formatNumber]);
 
@@ -109,6 +117,13 @@ const CurrencyConverter = () => {
       parseValue = 0;
     }
     setAmountFrom(value);
+
+    // Ensure we have valid rate conversion data
+    if (!rateConversion || !toCurrency || !(toCurrency in rateConversion)) {
+      console.error('Invalid rate conversion data');
+      setAmountTo("0");
+      return;
+    }
 
     const rate = rateConversion[toCurrency];
     let conversion = parseValue * rate;
@@ -127,6 +142,13 @@ const CurrencyConverter = () => {
       parseValue = 0;
     }
     setAmountTo(value);
+
+    // Ensure we have valid rate conversion data
+    if (!rateConversion || !toCurrency || !(toCurrency in rateConversion)) {
+      console.error('Invalid rate conversion data');
+      setAmountFrom("0");
+      return;
+    }
 
     const rate = rateConversion[toCurrency];
     const conversion = parseValue / rate;
@@ -158,44 +180,52 @@ const CurrencyConverter = () => {
     try {
       const response = await axios.get(`/api/currency?base_code=${fromCurrency}`);
       const conversionData = response.data;
-      if (conversionData.update_date) {
-        conversionData.update_date = conversionData.update_date.split("T")[0];
+
+      // Handle case when API returns error with fallback data
+      if (conversionData.error) {
+        console.error('API Error:', conversionData.error);
+        setRateConversion(conversionData.data?.conversion_rates ? JSON.parse(conversionData.data.conversion_rates) : {});
+        return;
       }
-      let isUpToDate = true;
-      let isInsert = true;
+
+      // Ensure we have valid conversion_rates
       if (!conversionData || !conversionData.conversion_rates) {
-        isUpToDate = false;
-      } else if (conversionData.update_date !== new Date().toISOString().split("T")[0]) {
-        isUpToDate = false;
-        isInsert = false;
+        console.error('Invalid conversion data received');
+        setRateConversion({});
+        return;
       }
 
-      if (!isUpToDate) {
-        const externalResponse = await axios.get(`https://v6.exchangerate-api.com/v6/fe7dfda1cacbc547ab0385d6/latest/${fromCurrency}`);
-        const externalData = externalResponse.data;
+      // Parse conversion_rates if it's a string
+      const rates = typeof conversionData.conversion_rates === 'string' 
+        ? JSON.parse(conversionData.conversion_rates)
+        : conversionData.conversion_rates;
 
-        if (isInsert) {
-          await axios.post("/api/currency", {
+      setRateConversion(rates);
+
+      // Check if data needs to be updated
+      const currentDate = new Date().toISOString().split('T')[0];
+      const updateDate = conversionData.update_date ? conversionData.update_date.split('T')[0] : null;
+      
+      if (!updateDate || updateDate !== currentDate) {
+        try {
+          const externalResponse = await axios.get(`https://v6.exchangerate-api.com/v6/fe7dfda1cacbc547ab0385d6/latest/${fromCurrency}`);
+          const externalData = externalResponse.data;
+
+          await axios[updateDate ? 'put' : 'post']('/api/currency', {
             base_code: externalData.base_code,
             conversion_rates: externalData.conversion_rates,
-            update_date: new Date().toISOString().split("T")[0],
+            update_date: currentDate,
           });
-        } else {
-          await axios.put("/api/currency", {
-            base_code: externalData.base_code,
-            conversion_rates: externalData.conversion_rates,
-            update_date: new Date().toISOString().split("T")[0],
-          });
+
+          setRateConversion(externalData.conversion_rates);
+        } catch (externalError) {
+          console.error('External API error:', externalError);
+          // Continue using existing rates if external API fails
         }
-
-        setRateConversion(externalData.conversion_rates);
-      } else {
-        const rates = JSON.parse(conversionData.conversion_rates);
-        setRateConversion(rates);
       }
     } catch (err) {
-      console.error("err", err);
-      // setError("Failed to fetch currency data rate");
+      console.error('Currency conversion error:', err);
+      setRateConversion({});
     }
   }, [fromCurrency]);
 
