@@ -14,34 +14,56 @@ type VariableEditorProps = {
 };
 
 const VariableEditor = ({ variables, initialValues = {}, onSave, onCancel }: VariableEditorProps) => {
-  const [values, setValues] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    // Initialize values with either initial values or default values from variables
+  // Initialize values with either initialValues or default values from variables
+  const [values, setValues] = useState<Record<string, string>>(() => {
     const initialState: Record<string, string> = {};
     variables.forEach(variable => {
-      initialState[variable.name] = initialValues[variable.name] || variable.value;
+      // Prioritaskan nilai dari initialValues, jika tidak ada gunakan nilai default dari variable
+      initialState[variable.name] = initialValues[variable.name] !== undefined 
+        ? initialValues[variable.name] 
+        : (variable.value || '');
     });
-    setValues(initialState);
-  }, [variables, initialValues]);
+    return initialState;
+  });
+
+  useEffect(() => {
+    // Update values when initialValues or variables change
+    const newValues: Record<string, string> = {};
+    variables.forEach(variable => {
+      newValues[variable.name] = initialValues[variable.name] !== undefined 
+        ? initialValues[variable.name] 
+        : (variable.value || '');
+    });
+    setValues(newValues);
+  }, [initialValues, variables]);
 
   const handleChange = (name: string, value: string) => {
     setValues(prev => ({
       ...prev,
-      [name]: value
+      [name]: value || ''
     }));
   };
 
   const handleSave = () => {
-    onSave(values);
+    // Ensure all variables have values before saving
+    const finalValues = { ...values };
+    variables.forEach(variable => {
+      if (finalValues[variable.name] === undefined) {
+        finalValues[variable.name] = variable.value || '';
+      }
+    });
+    onSave(finalValues);
   };
 
-  const getDisplayName = (name: string) => {
-    // Convert margin_top to "Margin Top"
-    return name
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+  const getDisplayName = (name: string): string => {
+    if (name.startsWith('margin_')) {
+      return name.replace('margin_', '').split('_').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+    }
+    return name.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
   };
 
   const marginVariables = variables.filter(v => v.name.startsWith('margin_'));

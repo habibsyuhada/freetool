@@ -1,4 +1,3 @@
-import { NextApiRequest, NextApiResponse } from 'next';
 import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { supabase } from '@/lib/supabase';
@@ -56,8 +55,10 @@ export const authOptions: AuthOptions = {
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt"
+  },
+  debug: process.env.NODE_ENV === "development",
 };
 
-export default async function auth(req: NextApiRequest, res: NextApiResponse) {
-  return await NextAuth(req, res, authOptions);
-}
+export default NextAuth(authOptions);

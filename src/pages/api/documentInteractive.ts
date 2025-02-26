@@ -1,10 +1,8 @@
-import { NextApiRequest, NextApiResponse } from 'next';  
-import { PrismaClient } from '@prisma/client';  
-import { decrypt } from '../../utils/encryption';   
+import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from './auth/[...nextauth]';
-
-const prisma = new PrismaClient();  
+import { supabase } from '@/lib/supabase';
+import { decrypt } from '../../utils/encryption';
 
 // Helper function to safely stringify error objects
 const formatError = (error: unknown): string => {
@@ -17,229 +15,208 @@ const formatError = (error: unknown): string => {
   return 'Unknown error occurred';
 };
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {  
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    // Check authentication for all requests
     const session = await getServerSession(req, res, authOptions);
-    
+
     if (!session) {
-      return res.status(401).json({ error: 'You must be logged in.' });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    if (!session.user?.id) {
-      return res.status(401).json({ error: 'Invalid session. Please log in again.' });
-    }
+    const userId = session.user.id;
 
-    if (req.method === 'GET') {  
-      try {  
-        const { id } = req.query;  
-
-        if (id && typeof id === 'string') {  
-          try {  
-            const decryptedId = decrypt(id);  
-            if (!decryptedId) {  
-              return res.status(400).json({ error: 'Invalid document ID' });  
-            }  
-
-            // Get single document with variables and check ownership
-            const document = await prisma.documentinteractive.findFirst({  
-              where: {  
-                id: parseInt(decryptedId),
-                userId: session.user.id
-              },  
-              include: {  
-                variables: {  
-                  select: {  
-                    id: true,  
-                    name: true,  
-                    value: true  
-                  }  
-                }  
-              },  
-            });  
-
-            if (!document) {  
-              return res.status(404).json({ error: 'Document not found' });  
-            }  
-
-            return res.status(200).json(document);  
-          } catch (decryptError) {  
-            console.error('Error decrypting ID:', formatError(decryptError));  
-            return res.status(400).json({ error: 'Invalid document ID format' });  
-          }  
-        } else {  
-          // Get all documents for the authenticated user
-          const documents = await prisma.documentinteractive.findMany({
-            where: {
-              userId: session.user.id
+    if (req.method === 'GET') {
+      // Get document with its variables
+      const { id } = req.query;
+      
+      if (id) {
+        // Decrypt the ID
+        let decryptedId;
+        try {
+          if (typeof id === 'string') {
+            decryptedId = decrypt(id);
+            if (!decryptedId) {
+              return res.status(400).json({ error: 'Invalid document ID' });
             }
-          });  
-          return res.status(200).json(documents);  
-        }  
-      } catch (error) {  
-        console.error('Error fetching document:', formatError(error));  
-        return res.status(500).json({ error: 'Internal server error while fetching document' });  
-      }  
-    } else if (req.method === 'POST') {  
-      try {  
-        const { name, desc, document_html, variables = [] } = req.body;  
-
-        if (!name) {  
-          return res.status(400).json({ error: 'Name is required' });  
-        }  
-
-        // Add default margin variables if not present
-        const defaultMargins = [
-          { name: 'margin_top', value: '20' },
-          { name: 'margin_right', value: '20' },
-          { name: 'margin_bottom', value: '20' },
-          { name: 'margin_left', value: '20' }
-        ];
-
-        const existingMarginNames = variables.map((v: { name: string; value: string }) => v.name);
-        const missingMargins = defaultMargins.filter(
-          margin => !existingMarginNames.includes(margin.name)
-        );
-
-        // Separate margin variables and other variables
-        const marginVariables = [
-          ...missingMargins,
-          ...variables.filter((v: { name: string; value: string }) => v.name.startsWith('margin_'))
-        ];
-        const otherVariables = variables.filter((v: { name: string; value: string }) => !v.name.startsWith('margin_'));
-
-        // Combine with margins first
-        const allVariables = [...marginVariables, ...otherVariables];
-
-        // Create document with variables using session user id
-        const document = await prisma.documentinteractive.create({  
-          data: {  
-            name,  
-            desc: desc || '',  
-            document_html: document_html || '',  
-            userId: session.user.id,
-            variables: {  
-              create: allVariables.map((v: { name: string; value: string }) => ({  
-                name: v.name,  
-                value: v.value || '',  
-              }))
-            }  
-          },  
-          include: {  
-            variables: true,  
-          },  
-        });  
-
-        return res.status(201).json(document);  
-      } catch (error) {  
-        console.error('Error creating document:', formatError(error));  
-        return res.status(500).json({ error: 'Internal server error while creating document' });  
-      }  
-    } else if (req.method === 'PUT') {  
-      try {  
-        const { id, name, desc, document_html, variables } = req.body;  
-
-        if (!id || !name) {  
-          return res.status(400).json({ error: 'ID and name are required' });  
-        }  
-
-        try {  
-          const decryptedId = decrypt(id);  
-          if (!decryptedId) {  
-            return res.status(400).json({ error: 'Invalid document ID' });  
-          }  
-
-          // First check if document exists and belongs to user
-          const existingDoc = await prisma.documentinteractive.findFirst({
-            where: {
-              id: parseInt(decryptedId),
-              userId: session.user.id
-            }
-          });
-
-          if (!existingDoc) {
-            return res.status(404).json({ error: 'Document not found or access denied' });
+          } else {
+            return res.status(400).json({ error: 'Document ID is required' });
           }
+        } catch (error) {
+          console.error('Error decrypting ID:', error);
+          return res.status(400).json({ error: 'Invalid document ID format' });
+        }
 
-          // Update document and replace all variables  
-          const document = await prisma.documentinteractive.update({  
-            where: {  
-              id: parseInt(decryptedId),  
-            },  
-            data: {  
-              name,  
-              desc: desc || '',  
-              document_html: document_html || '',  
-              variables: {  
-                deleteMany: {},  
-                create: variables?.map((v: { name: string; value: string }) => ({  
-                  name: v.name,  
-                  value: v.value || '',  
-                })) || []  
-              }  
-            },  
-            include: {  
-              variables: true,  
-            },  
-          });  
+        const documentId = parseInt(decryptedId);
 
-          return res.status(200).json(document);  
-        } catch (decryptError) {  
-          console.error('Error decrypting ID:', formatError(decryptError));  
-          return res.status(400).json({ error: 'Invalid document ID format' });  
-        }  
-      } catch (error) {  
-        console.error('Error updating document:', formatError(error));  
-        return res.status(500).json({ error: 'Internal server error while updating document' });  
-      }  
-    } else if (req.method === 'DELETE') {  
-      try {  
-        const { id } = req.body;  
+        // Get single document with variables
+        const { data: document, error: docError } = await supabase
+          .from('documentinteractive')
+          .select('*')
+          .eq('id', documentId)
+          .eq('userId', userId)
+          .single();
 
-        if (!id) {  
-          return res.status(400).json({ error: 'Document ID is required' });  
-        }  
+        if (docError) throw docError;
 
-        try {  
-          const decryptedId = decrypt(id);  
-          if (!decryptedId) {  
-            return res.status(400).json({ error: 'Invalid document ID' });  
-          }  
+        // Get variables for this document
+        const { data: variables, error: varError } = await supabase
+          .from('documentinteractive_variable')
+          .select('*')
+          .eq('documentId', documentId);
 
-          // First check if document exists and belongs to user
-          const existingDoc = await prisma.documentinteractive.findFirst({
-            where: {
-              id: parseInt(decryptedId),
-              userId: session.user.id
-            }
-          });
+        if (varError) throw varError;
 
-          if (!existingDoc) {
-            return res.status(404).json({ error: 'Document not found or access denied' });
-          }
+        // Combine document with its variables
+        const documentWithVariables = {
+          ...document,
+          variables: variables || []
+        };
 
-          // Delete document (variables will be deleted automatically due to cascade)  
-          await prisma.documentinteractive.delete({  
-            where: {  
-              id: parseInt(decryptedId),  
-            },  
-          });  
+        return res.status(200).json([documentWithVariables]);
+      } else {
+        // Get all documents (without variables for list view)
+        const { data, error } = await supabase
+          .from('documentinteractive')
+          .select('*')
+          .eq('userId', userId);
 
-          return res.status(200).json({ message: 'Document deleted successfully' });  
-        } catch (decryptError) {  
-          console.error('Error decrypting ID:', formatError(decryptError));  
-          return res.status(400).json({ error: 'Invalid document ID format' });  
-        }  
-      } catch (error) {  
-        console.error('Error deleting document:', formatError(error));  
-        return res.status(500).json({ error: 'Internal server error while deleting document' });  
-      }  
-    } else {  
-      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);  
-      return res.status(405).json({ error: `Method ${req.method} Not Allowed` });  
+        if (error) throw error;
+
+        return res.status(200).json(data);
+      }
     }
+
+    if (req.method === 'POST') {
+      const { name, desc, document_html, variables } = req.body;
+
+      // First, create the document
+      const { data: document, error: docError } = await supabase
+        .from('documentinteractive')
+        .insert([{
+          name,
+          desc,
+          document_html,
+          userId
+        }])
+        .select()
+        .single();
+
+      if (docError) throw docError;
+
+      // Then, if there are variables, create them
+      if (variables && variables.length > 0) {
+        const variablesToInsert = variables.map((v: { name: string; value: string }) => ({
+          documentId: document.id,
+          name: v.name,
+          value: v.value
+        }));
+
+        const { error: varError } = await supabase
+          .from('documentinteractive_variable')
+          .insert(variablesToInsert);
+
+        if (varError) throw varError;
+      }
+
+      return res.status(201).json(document);
+    }
+
+    if (req.method === 'PUT') {
+      const { id, name, desc, document_html, variables } = req.body;
+
+      // Decrypt the ID
+      let decryptedId;
+      try {
+        decryptedId = decrypt(id);
+        if (!decryptedId) {
+          return res.status(400).json({ error: 'Invalid document ID' });
+        }
+      } catch (error) {
+        console.error('Error decrypting ID:', error);
+        return res.status(400).json({ error: 'Invalid document ID format' });
+      }
+
+      const documentId = parseInt(decryptedId);
+
+      // First, update the document
+      const { data: document, error: docError } = await supabase
+        .from('documentinteractive')
+        .update({
+          name,
+          desc,
+          document_html,
+          updatedAt: new Date().toISOString()
+        })
+        .eq('id', documentId)
+        .eq('userId', userId)
+        .select()
+        .single();
+
+      if (docError) throw docError;
+
+      // Then, handle variables
+      if (variables && variables.length > 0) {
+        // Delete existing variables
+        const { error: deleteError } = await supabase
+          .from('documentinteractive_variable')
+          .delete()
+          .eq('documentId', documentId);
+
+        if (deleteError) throw deleteError;
+
+        // Insert new variables
+        const variablesToInsert = variables.map((v: { name: string; value: string }) => ({
+          documentId: documentId,
+          name: v.name,
+          value: v.value
+        }));
+
+        const { error: varError } = await supabase
+          .from('documentinteractive_variable')
+          .insert(variablesToInsert);
+
+        if (varError) throw varError;
+      }
+
+      return res.status(200).json(document);
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.query;
+
+      // Decrypt the ID if it exists
+      let decryptedId;
+      try {
+        if (typeof id === 'string') {
+          decryptedId = decrypt(id);
+          if (!decryptedId) {
+            return res.status(400).json({ error: 'Invalid document ID' });
+          }
+        } else {
+          return res.status(400).json({ error: 'Document ID is required' });
+        }
+      } catch (error) {
+        console.error('Error decrypting ID:', error);
+        return res.status(400).json({ error: 'Invalid document ID format' });
+      }
+
+      const documentId = parseInt(decryptedId);
+
+      // Delete document (variables will be deleted automatically due to CASCADE)
+      const { error } = await supabase
+        .from('documentinteractive')
+        .delete()
+        .eq('id', documentId)
+        .eq('userId', userId);
+
+      if (error) throw error;
+
+      return res.status(200).json({ message: 'Document deleted successfully' });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    console.error('API Error:', formatError(error));
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('API Error:', error);
+    return res.status(500).json({ error: formatError(error) });
   }
 }

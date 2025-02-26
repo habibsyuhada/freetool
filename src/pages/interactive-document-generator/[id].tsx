@@ -22,16 +22,16 @@ const DocumentView = () => {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [showVariableEditor, setShowVariableEditor] = useState(false);
-	const [currentHtml, setCurrentHtml] = useState('');
+	const [currentHtml, setCurrentHtml] = useState<string>('');
 	const [variableValues, setVariableValues] = useState<Record<string, string>>({});
 	const { data: session, status } = useSession();
 
 	// Fungsi untuk mengganti variabel dengan nilainya
 	const replaceVariablesWithValues = (text: string, variables: Array<{ name: string; value: string }>, values: Record<string, string>) => {
-		let result = text;
+		let result = text || '';
 		variables.forEach(variable => {
 			const regex = new RegExp(`{{${variable.name}}}`, 'g');
-			const currentValue = values[variable.name] || variable.value;
+			const currentValue = values[variable.name] || variable.value || '';
 			result = result.replace(regex, currentValue);
 		});
 		return result;
@@ -47,25 +47,26 @@ const DocumentView = () => {
 			if (id && status === "authenticated") {
 				try {
 					const response = await axios.get(`/api/documentInteractive?id=${id}`);
-					setDocumentData(response.data);
+					const doc = response.data[0]; // Ambil item pertama dari array
+					setDocumentData(doc);
 
 					// Initialize variable values
-					if (response.data.variables) {
+					if (doc.variables) {
 						const initialValues: Record<string, string> = {};
-						response.data.variables.forEach((variable: { name: string; value: string }) => {
-							initialValues[variable.name] = variable.value;
+						doc.variables.forEach((variable: { name: string; value: string }) => {
+							initialValues[variable.name] = variable.value || '';
 						});
 						setVariableValues(initialValues);
 
 						// Replace variables in HTML with their values
 						const htmlWithValues = replaceVariablesWithValues(
-							response.data.document_html,
-							response.data.variables,
+							doc.document_html || '',
+							doc.variables,
 							initialValues
 						);
 						setCurrentHtml(htmlWithValues);
 					} else {
-						setCurrentHtml(response.data.document_html);
+						setCurrentHtml(doc.document_html || '');
 					}
 				} catch (error) {
 					console.error("Error fetching document:", error);
@@ -89,7 +90,7 @@ const DocumentView = () => {
 		if (documentData && documentData.variables) {
 			// Update the displayed HTML with new variable values
 			const newHtml = replaceVariablesWithValues(
-				documentData.document_html,
+				documentData.document_html || '',
 				documentData.variables,
 				newValues
 			);

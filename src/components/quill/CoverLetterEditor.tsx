@@ -12,12 +12,24 @@ import { useRouter } from 'next/router';
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 type DocumentData = {
-  id: string;
+  id: string | number;
   name: string;
   desc: string;
   document_html: string;
   variables?: Array<{ name: string; value: string; }>;
-} | null;
+  createdAt?: string;
+  updatedAt?: string;
+  userId?: string;
+} | Array<{
+  id: string | number;
+  name: string;
+  desc: string;
+  document_html: string;
+  variables?: Array<{ name: string; value: string; }>;
+  createdAt?: string;
+  updatedAt?: string;
+  userId?: string;
+}> | null;
 
 type Variable = {
   name: string;
@@ -26,27 +38,46 @@ type Variable = {
 
 const DocumentEditor = ({ documentData }: { documentData: DocumentData }) => {
   const [editorHtml, setEditorHtml] = useState<string>('');
-  const [documentName, setDocumentName] = useState('');
-  const [documentDescription, setDocumentDescription] = useState('');
-  const [variables, setVariables] = useState<Variable[]>([]);
+  const [documentName, setDocumentName] = useState<string>('');
+  const [documentDescription, setDocumentDescription] = useState<string>('');
+  const [variables, setVariables] = useState<Variable[]>([
+    { name: 'margin_top', value: '20' },
+    { name: 'margin_right', value: '20' },
+    { name: 'margin_bottom', value: '20' },
+    { name: 'margin_left', value: '20' }
+  ]);
   const { data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
     if (documentData) {
-      setDocumentName(documentData.name);
-      setDocumentDescription(documentData.desc);
-      setEditorHtml(documentData.document_html);
-      if (documentData.variables) {
-        setVariables(documentData.variables);
-      } else {
-        // Set default margin variables for new documents
-        setVariables([
-          { name: 'margin_top', value: '20' },
-          { name: 'margin_right', value: '20' },
-          { name: 'margin_bottom', value: '20' },
-          { name: 'margin_left', value: '20' }
-        ]);
+      // Handle array data
+      const doc = Array.isArray(documentData) ? documentData[0] : documentData;
+      
+      if (doc) {
+        // Set document name and description
+        setDocumentName(doc.name || '');
+        setDocumentDescription(doc.desc || '');
+        setEditorHtml(doc.document_html || '');
+
+        // Handle variables
+        if (doc.variables && doc.variables.length > 0) {
+          // Pastikan semua margin variables ada
+          const marginVariables = ['margin_top', 'margin_right', 'margin_bottom', 'margin_left'];
+          const existingMargins = doc.variables.filter(v => v.name.startsWith('margin_'));
+          const missingMargins = marginVariables
+            .filter(margin => !existingMargins.find(v => v.name === margin))
+            .map(margin => ({ name: margin, value: '20' }));
+
+          // Gabungkan margin yang ada dengan yang default
+          const allVariables = [
+            ...existingMargins,
+            ...missingMargins,
+            ...doc.variables.filter(v => !v.name.startsWith('margin_'))
+          ];
+
+          setVariables(allVariables);
+        }
       }
     }
   }, [documentData]);
@@ -123,7 +154,8 @@ const DocumentEditor = ({ documentData }: { documentData: DocumentData }) => {
 
     const url = "/api/documentInteractive";
     const method = documentData ? 'put' : 'post';
-    const encryptedId = documentData?.id ? encrypt(documentData.id.toString()) : undefined;
+    const doc = Array.isArray(documentData) ? documentData[0] : documentData;
+    const encryptedId = doc?.id ? encrypt(doc.id.toString()) : undefined;
 
     const config = {
       headers: {
