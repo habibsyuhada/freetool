@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
 	compiler: {
     removeConsole: false,
   },
+  experimental: {
+    serverComponentsExternalPackages: ["puppeteer-core"],
+  },
 };
 
 export default nextConfig;

@@ -1,6 +1,8 @@
 // pages/api/generate-pdf.ts  
 import { NextApiRequest, NextApiResponse } from 'next';  
-import puppeteer from 'puppeteer';  
+import chromium from "@sparticuz/chromium-min";
+import puppeteer from "puppeteer-core";
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {  
   if (req.method === 'POST') {  
@@ -86,9 +88,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     </html>`;  
 
     try {   
+      const chromiumPack = "https://my-domain/chromium-v121.0.0-pack.tar";
       const browser = await puppeteer.launch({ 
         headless: true,
-        args: ['--no-sandbox'] 
+        executablePath: await chromium.executablePath(chromiumPack),
+        args: chromium.args
       });  
       const page = await browser.newPage();  
 
